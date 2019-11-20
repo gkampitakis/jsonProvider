@@ -62,6 +62,8 @@ class JsonDocController {
 
       if (!document) return res.status(404).json({});
 
+      await document.remove();
+
       res.status(200).send({});
 
     } catch (error) {
