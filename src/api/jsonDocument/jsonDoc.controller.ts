@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 import { JsonDoc } from './jsonDoc.model';
 import { ObjectID } from 'mongodb';
+import _ from '../../util/helper';
 
 class JsonDocController {
 
   private static handleError(res: Response, error: Error, status = 500) {
 
+    _.Logger.error(error.message);
     return res.status(status).json(error);
 
   }
@@ -36,7 +38,7 @@ class JsonDocController {
 
     try {
 
-      if (!ObjectID.isValid(req.params.id)) res.status(404).send({});
+      if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
       const document = await JsonDoc.findById(req.params.id).lean().exec();
 
@@ -56,7 +58,7 @@ class JsonDocController {
 
     try {
 
-      if (!ObjectID.isValid(req.params.id)) res.status(404).send({});
+      if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
       const document = await JsonDoc.findById(req.params.id).exec();
 
