@@ -6,13 +6,14 @@ import axios from 'axios';
 chai.use(chaiHttp);
 
 const url = `http://localhost:${config.port}`;
+const secret = config.secrets.authentication;
 
 describe('Create jsonDoc', function () {
 
   it('Should create a json', function (done) {
     chai.
       request(url)
-      .post('/json/doc')
+      .post(`/json/doc?secret=${secret}`)
       .set('Content-Type', 'application/json')
       .send(({
         "_schema": {
@@ -31,7 +32,7 @@ describe('Create jsonDoc', function () {
   it('Should fail to create a json', function (done) {
     chai.
       request(url)
-      .post('/json/doc')
+      .post(`/json/doc?secret=${secret}`)
       .set('Content-Type', 'application/json')
       .send(({}))
       .end((err, res) => {
@@ -50,7 +51,7 @@ describe('Retrieve jsonDoc', function () {
 
   it('Should return an object', function (done) {
 
-    axios.post(url + '/json/doc', {
+    axios.post(`${url}/json/doc?secret=${secret}`, {
       "_schema": {
         "test": "Hello World"
       }
@@ -58,7 +59,7 @@ describe('Retrieve jsonDoc', function () {
 
       chai.
         request(url)
-        .get('/json/doc/' + data._id)
+        .get(`/json/doc/${data._id}`)
         .set('Content-Type', 'application/json')
         .end((err, res) => {
           if (err) return done(err);
@@ -75,7 +76,7 @@ describe('Retrieve jsonDoc', function () {
 
     chai.
       request(url)
-      .get('/json/doc/1231231231')
+      .get('/json/doc/5dd5b8047c745f78eb32e009')
       .set('Content-Type', 'application/json')
       .end((err, res) => {
         if (err) return done(err);
@@ -94,7 +95,7 @@ describe('Update jsonDoc', () => {
 
   it('Should return an object', function (done) {
 
-    axios.post(url + '/json/doc', {
+    axios.post(`${url}/json/doc?secret=${secret}`, {
       "_schema": {
         "test": "Hello World"
       }
@@ -102,7 +103,7 @@ describe('Update jsonDoc', () => {
 
       chai.
         request(url)
-        .put('/json/doc/' + data._id)
+        .put(`/json/doc/${data._id}?secret=${secret}`)
         .send({
           "_schema": {
             "test2": "new Field",
@@ -132,7 +133,7 @@ describe('Update jsonDoc', () => {
 
     chai.
       request(url)
-      .put('/json/doc/ddadsa')
+      .put(`/json/doc/5dd5b8047c745f78eb32e009?secret=${secret}`)
       .send({
         "_schema": {
           "test2": "new Field",
@@ -144,7 +145,7 @@ describe('Update jsonDoc', () => {
         if (err) return done(err);
 
         expect(res).to.have.status(404);
-        expect(res.body).not.to.be.empty;
+        expect(res.body).to.be.empty;
         done();
 
       });
@@ -156,7 +157,7 @@ describe('Delete jsonDoc', () => {
 
   it('Should delete jsonDoc', (done) => {
 
-    axios.post(url + '/json/doc', {
+    axios.post(`${url}/json/doc?secret=${secret}`, {
       "_schema": {
         "test": "Hello World"
       }
@@ -164,7 +165,7 @@ describe('Delete jsonDoc', () => {
 
       chai.
         request(url)
-        .delete('/json/doc/' + data._id)
+        .delete(`/json/doc/${data._id}?secret=${secret}`)
         .set('Content-Type', 'application/json')
         .end((err, res) => {
           if (err) return done(err);
@@ -183,7 +184,7 @@ describe('Delete jsonDoc', () => {
 
     chai.
       request(url)
-      .delete('/json/doc/ddadsa')
+      .delete(`/json/doc/5dd5b8047c745f78eb32e009?secret=${secret}`)
       .set('Content-Type', 'application/json')
       .end((err, res) => {
         if (err) return done(err);
