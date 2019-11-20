@@ -25,11 +25,15 @@ const all = {
 
   env: process.env.NODE_ENV,
   port: process.env.PORT,
+  secrets: {
+    authentication: process.env.SECRET
+  },
   mongo: {
     connect: true,
     options: {
       useNewUrlParser: true,
-      useFindAndModify: false
+      useFindAndModify: false,
+      useUnifiedTopology: true
     },
     uri: process.env.MONGO_URI
   },
