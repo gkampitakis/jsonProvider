@@ -6,9 +6,8 @@
   "scripts": {
     "test": "mocha -r ts-node/register src/**/*.test.ts",
     "test:env": "NODE_ENV=test ts-node-dev --respawn --transpileOnly ./src/index.ts",
-    "tsc": "tsc",
     "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts",
-    "prod": "tsc && node ./build/index.js"
+    "prod": "tsc && NODE_ENV=production node ./build/index.js"
   },
   "husky": {
     "hooks": {

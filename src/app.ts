@@ -48,8 +48,8 @@ export class App {
 
   private startServer() {
 
-    this.server.listen(5000, () => {
-      _.Logger.info(`Express server listening on port ${5000}`);
+    this.server.listen(config.port, () => {
+      _.Logger.info(`Express server listening on port ${config.port}`);
     });
 
   }
