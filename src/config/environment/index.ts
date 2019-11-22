@@ -35,7 +35,7 @@ const all = {
       useFindAndModify: false,
       useUnifiedTopology: true
     },
-    uri: process.env.MONGO_URI
+    uri: process.env.MONGODB_URI
   },
   root: path.normalize(`${__dirname}/../../..`)
 };
