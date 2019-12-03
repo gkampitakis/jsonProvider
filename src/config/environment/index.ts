@@ -33,7 +33,8 @@ const all = {
     options: {
       useNewUrlParser: true,
       useFindAndModify: false,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
+      useCreateIndex: true
     },
     uri: process.env.MONGODB_URI
   },
