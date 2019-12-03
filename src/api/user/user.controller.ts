@@ -5,35 +5,26 @@ import _ from '../../util/helper';
 
 class UserController {
 
-  private static handleError(res: Response, error: Error, status = 500) {
-
-    _.Logger.error(error.message);
-    return res.status(status).json(error);
-
-  }
-
-  public async create(req: Request, res: Response) {
+  public create = async (req: Request, res: Response) => {
 
     try {
 
-      const user: any = new User(req.body);
+      const user: UserI = new User(req.body) as UserI;
 
-      const doc = await user.save().toObject();
+      const doc = await user.save(),
+        result = doc.toObject();
 
-      delete doc.password;
-      delete doc.salt;
-
-      res.status(200).json(doc);
+      res.status(200).json(this.stripPassword(result));
 
     } catch (error) {
 
-      UserController.handleError(res, error);
+      this.handleError(res, error);
 
     }
 
   }
 
-  public async retrieve(req: Request, res: Response) {
+  public retrieve = async (req: Request, res: Response) => {
 
     try {
 
@@ -43,19 +34,16 @@ class UserController {
 
       if (!user) return res.status(404).send({});
 
-      return res.status(200).json(user);
+      return res.status(200).json(this.stripPassword(user));
 
     } catch (error) {
 
-      UserController.handleError(res, error);
+      this.handleError(res, error);
 
     }
 
   }
 
-  // public me(req: Request, res: Response) {
-  //FIXME: when tokens are implemented pass the userId on the req object
-  // }
 
   public async remove(req: Request, res: Response) {
 
@@ -63,7 +51,7 @@ class UserController {
 
       if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
-      const user = await User.findById(req.params.id).exec();
+      const user: UserI = await User.findById(req.params.id).exec() as UserI;
 
       if (!user) return res.status(404).json({});
 
@@ -73,16 +61,59 @@ class UserController {
 
     } catch (error) {
 
-      UserController.handleError(res, error);
+      this.handleError(res, error);
 
     }
 
   }
 
-  // public update(req: Request, res: Response) {
+  public update = async (req: Request, res: Response) => {
+
+    try {
+
+      if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
+
+      const user: UserI = await User.findById(req.params.id).exec() as UserI;
+
+      if (!user) return res.status(404).json({});
+
+      user.username = req.body?.username || user.username;
+      user.email = req.body?.email || user.email;
+      user.image = req.body?.image || user.image;
+      user.password = req.body?.password || user.password;
+
+      await user.save();
+
+      return res.status(200).json(this.stripPassword(user.toObject()));
+
+    } catch (error) {
+
+      this.handleError(res, error);
+
+    }
+
+  }
 
 
+  // public me(req: Request, res: Response) {
+  //FIXME: when tokens are implemented pass the userId on the req object
   // }
+
+  private stripPassword(user: UserI): Partial<UserI> {
+
+    delete user.password;
+    delete user.salt;
+
+    return user;
+
+  }
+
+  private handleError(res: Response, error: Error, status = 500) {
+
+    _.Logger.error(error.message);
+    return res.status(status).json(error);
+
+  }
 
 }
 

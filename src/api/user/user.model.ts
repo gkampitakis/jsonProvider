@@ -48,17 +48,13 @@ const userSchema = new Schema({
 /**
  * Validations
  */
-
 userSchema
   .path('email')
   .validate(function (email: string) {
 
     return validator.isEmail(email);
 
-  });
-
-userSchema
-  .path('email')
+  })
   .validate(function (value) {
 
     return this.constructor.findOne({ email: value }).exec()
