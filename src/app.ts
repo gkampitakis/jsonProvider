@@ -4,7 +4,7 @@ import bluebird from 'bluebird';
 import mongoose from 'mongoose';
 import { setupExpress } from './config/express';
 import { setupRoutes } from './routes';
-import _ from './util/helper';
+import $ from './util/helper';
 import { config } from './config/environment';
 
 export class App {
@@ -31,10 +31,10 @@ export class App {
     if (!config.mongo.connect) return;
 
     mongoose.connect(config.mongo.uri, config.mongo.options)
-      .then(() => _.Logger.info('MongoDB is connected on ' + config.mongo.uri));
+      .then(() => $.Logger.info('MongoDB is connected on ' + config.mongo.uri));
 
     mongoose.connection.on('error', err => {
-      _.Logger.error(`MongoDB connection error: ${err}`);
+      $.Logger.error(`MongoDB connection error: ${err}`);
       process.exit(-1);
     });
 
@@ -49,7 +49,7 @@ export class App {
   private startServer() {
 
     this.server.listen(config.port, () => {
-      _.Logger.info(`Express server listening on port ${config.port}`);
+      $.Logger.info(`Express server listening on port ${config.port}`);
     });
 
   }

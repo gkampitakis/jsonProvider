@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { JsonDoc } from './jsonDoc.model';
 import { ObjectID } from 'mongodb';
-import _ from '../../util/helper';
+import $ from '../../util/helper';
+import _ from 'lodash';
 
 class JsonDocController {
 
   private static handleError(res: Response, error: Error, status = 500) {
 
-    _.Logger.error(error.message);
+    $.Logger.error(error.message);
     return res.status(status).json(error);
 
   }
@@ -40,11 +41,11 @@ class JsonDocController {
 
       if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
-      const document = await JsonDoc.findById(req.params.id).lean().exec();
+      const doc = await JsonDoc.findById(req.params.id).lean().exec();
 
-      if (!document) return res.status(404).send({});
+      if (!doc) return res.status(404).send({});
 
-      return res.status(200).json(document._schema);
+      return res.status(200).json(doc._schema);
 
     } catch (error) {
 
@@ -78,17 +79,22 @@ class JsonDocController {
 
   public async update(req: Request, res: Response) {
 
-    //FIXME: private or public
+    //FIXME: private or public must be a different call
 
     try {
 
       if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
+      if (_.isEmpty(req.body._schema)) return res.status(422).json({
+        status: 422,
+        message: "Body is empty"
+      });
+
       const document: any = await JsonDoc.findById(req.params.id).exec();
 
       if (!document) return res.status(404).send({});
 
-      document._schema = { ...document._schema, ...req.body._schema };
+      document._schema = req.body._schema;
 
       await document.save();
 
