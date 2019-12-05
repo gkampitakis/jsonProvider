@@ -10,8 +10,9 @@ export interface UserI extends Document {
   salt: string;
   image: string;
   verified: boolean;
-  makeSalt(number, callback): any;
-  encryptPassword(pass, callback): any;
+  authenticate(password: string, callback?: Function): Function | boolean;
+  makeSalt(number, callback): Function;
+  encryptPassword(pass, callback): Function;
 };
 
 const userSchema = new Schema({
@@ -147,7 +148,7 @@ userSchema.pre<UserI>('save', function (next) {
  */
 
 userSchema.methods = {
-  authenticate(password: string, callback: Function) {
+  authenticate(password: string, callback?: Function) {
 
     if (!callback) {
 
