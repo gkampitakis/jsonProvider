@@ -29,6 +29,7 @@
     "log4js": "^6.0.0",
     "method-override": "^3.0.0",
     "mongoose": "^5.7.11",
+    "parse-bearer-token": "^1.0.1",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "ts-node": "^8.5.2",

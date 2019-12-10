@@ -59,6 +59,30 @@ class TokenController {
 
   }
 
+  public retrieveUser(token: string): Promise<string> {
+
+    return new Promise((resolve, reject) => {
+
+      tokenModel.findOne({ token: token })
+        .lean()
+        .exec()
+        .then((data: TokenModel) => {
+
+          if (!data) return reject();
+
+          resolve(data.userId);
+
+        })
+        .catch(err => {
+
+          reject(err);
+
+        });
+
+    });
+
+  }
+
 }
 
 export const tokenController = new TokenController();

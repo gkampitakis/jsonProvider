@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import passport from 'passport';
 import { UserI, User } from "../../user/user.model";
-import { tokenController, Token } from './token.controller';
+import { tokenController, TokenModel } from './token.controller';
 import { setup } from '../local/passport';
 
 const tokenRouter = Router();
@@ -19,7 +19,7 @@ tokenRouter.post('/', (req: Request, res: Response, next: Function) => {
 
     try {
 
-      const token: Token = await tokenController.create(user._id) as Token;//TEST: if this works
+      const token: TokenModel = await tokenController.create(user._id) as TokenModel;
 
       return res.status(200).json(token);
 

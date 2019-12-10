@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { JsonDoc } from './jsonDoc.model';
+import { JsonDocModel } from './jsonDoc.model';
 import { ObjectID } from 'mongodb';
 import $ from '../../util/helper';
 import _ from 'lodash';
@@ -9,15 +9,20 @@ class JsonDocController {
   private static handleError(res: Response, error: Error, status = 500) {
 
     $.Logger.error(error.message);
-    return res.status(status).json(error);
+    return res.status(status).json({
+      message: error.message,
+      status: status
+    });
 
   }
 
   public create(req: Request, res: Response) {
-
+    //TODO: only a registered user can create an object and his id is added to the members array
+    if (!req.user) return JsonDocController.handleError(res, new Error('Need to be registered'), 401);
     try {
 
-      const doc = new JsonDoc(req.body);
+      const doc: any = new JsonDocModel(req.body);
+      doc.members.push({ userId: req.user, access: 'admin' });
 
       doc.save((err, data) => {
 
@@ -36,12 +41,16 @@ class JsonDocController {
   }
 
   public async retrieve(req: Request, res: Response) {
+    //TODO: check if public and just return it.
+    //if not public check if we have a user
+    //if we don't throw 401
+    //if we do check we has access and retrieve or again 401
 
     try {
 
       if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
-      const doc = await JsonDoc.findById(req.params.id).lean().exec();
+      const doc = await JsonDocModel.findById(req.params.id).lean().exec();
 
       if (!doc) return res.status(404).send({});
 
@@ -56,12 +65,12 @@ class JsonDocController {
   }
 
   public async remove(req: Request, res: Response) {
-
+    //Only registered and admin access user can do that
     try {
 
       if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
-      const document = await JsonDoc.findById(req.params.id).exec();
+      const document = await JsonDocModel.findById(req.params.id).exec();
 
       if (!document) return res.status(404).json({});
 
@@ -79,7 +88,7 @@ class JsonDocController {
 
   public async update(req: Request, res: Response) {
 
-    //FIXME: private or public must be a different call
+    //TODO: add check if the user has access to this file to change it only a user with write access or admin
 
     try {
 
@@ -90,7 +99,7 @@ class JsonDocController {
         message: "Body is empty"
       });
 
-      const document: any = await JsonDoc.findById(req.params.id).exec();
+      const document: any = await JsonDocModel.findById(req.params.id).exec();
 
       if (!document) return res.status(404).send({});
 
@@ -107,6 +116,28 @@ class JsonDocController {
     }
 
   }
+
+
+  //FIXME: private or public must be a different call
+  public async updatePrivacy(req: Request, res: Response) {
+    //TODO: only admins can change the privacy
+
+  }
+
+
+  public addMember(req: Request, res: Response) {
+    //TODO: only admins can change
+  }
+
+  public removeMember(req: Request, res: Response) {
+    //TODO: only admins can change
+  }
+
+  public updateMember(req: Request, res: Response) {
+    //TODO: only admins can change
+  }
+
+
 }
 
 export default new JsonDocController();
