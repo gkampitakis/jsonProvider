@@ -14,7 +14,7 @@ tokenRouter.post('/', (req: Request, res: Response, next: Function) => {
 
     const error = err || info;
 
-    if (error) return res.status(401).json(error);
+    if (error) return res.status(500).json(error);
     if (!user) return res.status(404).json({ message: 'Something went wrong, please try again.' });
 
     try {

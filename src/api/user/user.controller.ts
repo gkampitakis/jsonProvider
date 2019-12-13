@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { User, UserI } from './user.model';
 import { ObjectID } from 'mongodb';
-import _ from '../../util/helper';
+import $ from '../../util/helper.service';
 
 class UserController {
 
@@ -110,7 +110,7 @@ class UserController {
 
   private handleError(res: Response, error: Error, status = 500) {
 
-    _.Logger.error(error.message);
+    $.Logger.error(error.message);
     return res.status(status).json(error);
 
   }

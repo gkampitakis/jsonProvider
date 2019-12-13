@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { JsonDocModel } from './jsonDoc.model';
+import { JsonDocModel, JsonDoc } from './jsonDoc.model';
 import { ObjectID } from 'mongodb';
-import $ from '../../util/helper';
+import $ from '../../util/helper.service';
 import _ from 'lodash';
+import Security from '../auth/security.service';
 
 class JsonDocController {
 
@@ -17,12 +18,13 @@ class JsonDocController {
   }
 
   public create(req: Request, res: Response) {
-    //TODO: only a registered user can create an object and his id is added to the members array
+
     if (!req.user) return JsonDocController.handleError(res, new Error('Need to be registered'), 401);
+
     try {
 
       const doc: any = new JsonDocModel(req.body);
-      doc.members.push({ userId: req.user, access: 'admin' });
+      doc.members.push({ userId: req.user });
 
       doc.save((err, data) => {
 
@@ -41,16 +43,14 @@ class JsonDocController {
   }
 
   public async retrieve(req: Request, res: Response) {
-    //TODO: check if public and just return it.
-    //if not public check if we have a user
-    //if we don't throw 401
-    //if we do check we has access and retrieve or again 401
 
     try {
 
       if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
       const doc = await JsonDocModel.findById(req.params.id).lean().exec();
+
+      if (!Security.authorizedRetrieval(req.user, doc as JsonDoc)) return res.status(401).json({ message: "Unauthorized Access", status: 401 });
 
       if (!doc) return res.status(404).send({});
 

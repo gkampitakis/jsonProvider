@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import { config } from "../config/environment";
 import { getLogger, Logger } from 'log4js';
 import tokenParser from 'parse-bearer-token';
 import { tokenController } from '../api/auth/token/token.controller';
 
-class HelperFunctions {
-  private static instance: HelperFunctions;
+class HelperService {
+  private static instance: HelperService;
   private _logger: Logger;
 
   private constructor() {
@@ -19,10 +18,10 @@ class HelperFunctions {
 
   static getInstance() {
 
-    if (!HelperFunctions.instance)
-      HelperFunctions.instance = new HelperFunctions();
+    if (!HelperService.instance)
+      HelperService.instance = new HelperService();
 
-    return HelperFunctions.instance;
+    return HelperService.instance;
 
   }
 
@@ -30,19 +29,6 @@ class HelperFunctions {
   public get Logger(): Logger {
 
     return this._logger;
-
-  }
-
-  basicAuthentication(req: Request, res: Response, next: Function) {
-    //TODO: this will be deprecated
-    if (req.query.secret !== config.secrets.authentication) {
-
-      res.status(401).json('Unauthorized');
-      return;
-
-    }
-
-    next();
 
   }
 
@@ -54,13 +40,14 @@ class HelperFunctions {
 
     try {
 
-      req['user'] = await tokenController.retrieveUser(token);
+      req.user = await tokenController.retrieveUser(token);
 
-    } catch{ }
+    } catch { }
 
     next();
+
   }
 
 }
 
-export default HelperFunctions.getInstance();
+export default HelperService.getInstance();

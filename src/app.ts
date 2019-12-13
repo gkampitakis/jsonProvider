@@ -4,7 +4,7 @@ import bluebird from 'bluebird';
 import mongoose from 'mongoose';
 import { setupExpress } from './config/express';
 import { setupRoutes } from './routes';
-import $ from './util/helper';
+import $ from './util/helper.service';
 import { config } from './config/environment';
 
 export class App {
@@ -14,28 +14,41 @@ export class App {
 
   constructor() {
 
-    this.connectDatabase();
-
     this.app = express();
     this.server = http.createServer(this.app);
 
     this.setupGlobals();
     setupExpress(this.app);
     setupRoutes(this.app);
-    this.startServer();
+    this.connectDatabase()
+      .then(() => this.startServer())
+      .catch(() => process.exit(-1));
 
   }
 
   private connectDatabase() {
 
-    if (!config.mongo.connect) return;
+    return new Promise((resolve, reject) => {
 
-    mongoose.connect(config.mongo.uri, config.mongo.options)
-      .then(() => $.Logger.info('MongoDB is connected on ' + config.mongo.uri));
+      if (!config.mongo.connect) reject();
 
-    mongoose.connection.on('error', err => {
-      $.Logger.error(`MongoDB connection error: ${err}`);
-      process.exit(-1);
+      mongoose.connect(config.mongo.uri, config.mongo.options)
+        .then(() => {
+
+          $.Logger.info('MongoDB is connected on ' + config.mongo.uri);
+
+          resolve();
+
+        });
+
+      mongoose.connection.on('error', err => {
+
+        $.Logger.error(`MongoDB connection error: ${err}`);
+
+        reject();
+
+      });
+
     });
 
   }

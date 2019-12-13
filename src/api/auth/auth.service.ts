@@ -26,3 +26,9 @@
 // }
 
 // // function 
+
+class AuthenticationService {
+
+}
+
+export default new AuthenticationService();

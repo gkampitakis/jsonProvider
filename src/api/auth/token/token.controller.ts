@@ -68,7 +68,7 @@ class TokenController {
         .exec()
         .then((data: TokenModel) => {
 
-          if (!data) return reject();
+          if (!data) return reject('Token not found');
 
           resolve(data.userId);
 
