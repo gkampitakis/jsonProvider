@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { getLogger, Logger } from 'log4js';
 import tokenParser from 'parse-bearer-token';
 import { tokenController } from '../api/auth/token/token.controller';
+import { ObjectID } from 'mongodb';
 
 class HelperService {
   private static instance: HelperService;
@@ -46,6 +47,17 @@ class HelperService {
 
     next();
 
+  }
+
+  public isValidId(...ids): boolean {
+
+    for (const id of ids) {
+
+      if (!ObjectID.isValid(id)) return false;
+
+    }
+
+    return true;
   }
 
 }

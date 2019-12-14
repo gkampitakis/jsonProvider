@@ -1,7 +1,7 @@
 import { Token as tokenModel } from './token.model';
-import { ObjectID } from 'mongodb';
 import { Document } from "mongoose";
 import crypto from 'crypto';
+import $ from '../../../util/helper.service';
 
 export interface TokenModel extends Document {
   token: string;
@@ -14,7 +14,7 @@ class TokenController {
 
   public create = async (userId: string) => {
 
-    if (!this.isValidId(userId)) throw new Error('Invalid id provided');
+    if (!$.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token: string = this.generateToken();
     const document: TokenModel = new tokenModel({ userId: userId, token: token }) as TokenModel;
@@ -27,7 +27,7 @@ class TokenController {
 
   public remove = async (userId: string) => {//TODO: Needs testing
 
-    if (!this.isValidId(userId)) throw new Error('Invalid id provided');
+    if (!$.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token = await tokenModel.findOne({ userId: userId }).exec();
 
@@ -39,17 +39,11 @@ class TokenController {
 
   public retrieve = async (userId: string) => {//TODO: Needs testing
 
-    if (!this.isValidId(userId)) throw new Error('Invalid id provided');
+    if (!$.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token = await tokenModel.findOne({ userId: userId }).lean().exec();
 
     return token;
-
-  }
-
-  private isValidId(id: string) {
-
-    return ObjectID.isValid(id);
 
   }
 
