@@ -3,7 +3,7 @@ import { JsonDocModel, JsonDoc } from './jsonDoc.model';
 import { ObjectID } from 'mongodb';
 import $ from '../../util/helper.service';
 import _ from 'lodash';
-import Security from '../auth/security.service';
+import Security from './security.service';
 
 class JsonDocController {
 
@@ -19,7 +19,8 @@ class JsonDocController {
 
   public create(req: Request, res: Response) {
 
-    if (!req.user) return JsonDocController.handleError(res, new Error('Need to be registered'), 401);
+    if (!req.user)
+      return JsonDocController.handleError(res, new Error('Need to be registered'), 401);
 
     try {
 
@@ -50,7 +51,8 @@ class JsonDocController {
 
       const doc = await JsonDocModel.findById(req.params.id).lean().exec();
 
-      if (!Security.authorizedRetrieval(req.user, doc as JsonDoc)) return res.status(401).json({ message: "Unauthorized Access", status: 401 });
+      if (!Security.authorizedRetrieval(req.user, doc as JsonDoc))
+        return res.status(401).json({ message: "Unauthorized Access", status: 401 });
 
       if (!doc) return res.status(404).send({});
 
@@ -65,12 +67,15 @@ class JsonDocController {
   }
 
   public async remove(req: Request, res: Response) {
-    //Only registered and admin access user can do that
+
     try {
 
       if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
 
       const document = await JsonDocModel.findById(req.params.id).exec();
+
+      if (!Security.isAdmin(req.user, document.toObject() as JsonDoc))
+        return res.status(401).json({ message: "Unauthorized Access", status: 401 });
 
       if (!document) return res.status(404).json({});
 
@@ -88,8 +93,6 @@ class JsonDocController {
 
   public async update(req: Request, res: Response) {
 
-    //TODO: add check if the user has access to this file to change it only a user with write access or admin
-
     try {
 
       if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
@@ -102,6 +105,9 @@ class JsonDocController {
       const document: any = await JsonDocModel.findById(req.params.id).exec();
 
       if (!document) return res.status(404).send({});
+
+      if (!Security.authorizedUpdate(req.user, document.toObject() as JsonDoc))
+        return res.status(401).json({ message: "Unauthorized Access", status: 401 });
 
       document._schema = req.body._schema;
 
@@ -116,7 +122,6 @@ class JsonDocController {
     }
 
   }
-
 
   //FIXME: private or public must be a different call
   public async updatePrivacy(req: Request, res: Response) {
