@@ -1,6 +1,6 @@
 {
   "name": "jsonprovider",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Simple Server for storing and serving json files",
   "main": "index.js",
   "scripts": {
@@ -10,11 +10,6 @@
     "prod": "tsc && NODE_ENV=production node ./build/index.js",
     "start": "NODE_ENV=production node ./build/index.js",
     "build": "rimraf ./build && tsc"
-  },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run test"
-    }
   },
   "author": "George Kampitakis",
   "license": "ISC",
@@ -34,6 +29,7 @@
     "passport-local": "^1.0.0",
     "ts-node": "^8.5.2",
     "typescript": "^3.7.2",
+    "unique-names-generator": "^4.1.1",
     "validator": "^12.1.0"
   },
   "devDependencies": {

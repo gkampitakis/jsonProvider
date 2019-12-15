@@ -10,6 +10,7 @@ export interface UserI extends Document {
   salt: string;
   image: string;
   verified: boolean;
+  documents: [];
   authenticate(password: string, callback?: Function): Function | boolean;
   makeSalt(number, callback): Function;
   encryptPassword(pass, callback): Function;
@@ -43,6 +44,11 @@ const userSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now()
+  },
+  documents: {//FIXME: 
+    type: [Schema.Types.ObjectId],
+    ref: 'JsonDoc',
+    default: []
   }
 });
 

@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
 export enum access {
   read,
@@ -22,7 +23,8 @@ export interface JsonDoc {
 
 const authorizationSchema = new Schema({
   userId: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   },
   access: {
@@ -43,7 +45,28 @@ const jsonDocSchema = new Schema({
   members: {
     type: [authorizationSchema],
     required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now()
+  },
+  name: {
+    type: String,
+    unique: true
   }
+});
+
+jsonDocSchema.pre<any>('save', function (next) {
+
+  if (this.name) return next();
+
+  this.name = uniqueNamesGenerator({
+    dictionaries: [adjectives, colors, animals],
+    separator: '-'
+  });
+
+  next();
+
 });
 
 export const JsonDocModel = model('JsonDoc', jsonDocSchema, 'JsonDoc');
