@@ -3,6 +3,7 @@ import { getLogger, Logger } from 'log4js';
 import tokenParser from 'parse-bearer-token';
 import { tokenController } from '../api/auth/token/token.controller';
 import { ObjectID } from 'mongodb';
+import version from '../../version.json';
 
 class HelperService {
   private static instance: HelperService;
@@ -58,6 +59,12 @@ class HelperService {
     }
 
     return true;
+  }
+
+  public versionInfo(req: Request, res: Response) {
+
+    res.status(200).json(version);
+
   }
 
 }
