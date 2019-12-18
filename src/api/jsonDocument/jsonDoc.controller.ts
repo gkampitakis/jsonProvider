@@ -1,8 +1,9 @@
-import { Request, Response } from 'express';
-import { JsonDocModel, JsonDoc, privacy, access } from './jsonDoc.model';
-import $ from '../../util/helper.service';
-import _ from 'lodash';
-import Security from './security.service';
+import { Request, Response } from "express";
+import { JsonDocModel, JsonDoc, privacy, access } from "./jsonDoc.model";
+import $ from "../../util/helper.service";
+import _ from "lodash";
+import Security from "./security.service";
+import userController from "../user/user.controller";
 
 class JsonDocController {
 
@@ -21,16 +22,18 @@ class JsonDocController {
     const loggedUser = req.user;
 
     if (!loggedUser)
-      return JsonDocController.handleError(res, new Error('Need to be registered'), 401);
+      return JsonDocController.handleError(res, new Error("Need to be registered"), 401);
 
     try {
 
       const doc: any = new JsonDocModel(req.body);
       doc.members.push({ userId: loggedUser });
 
-      doc.save((err, data) => {
+      doc.save(async (err, data) => {
 
         if (err) return JsonDocController.handleError(res, err);
+
+        await userController.addDocument(loggedUser, data._id.toString());
 
         res.status(200).json(data);
 
@@ -51,16 +54,18 @@ class JsonDocController {
 
     try {
 
-      if (!$.isValidId(id)) return res.status(404).send({});
+      if (!$.isValidId(id))
+        return JsonDocController.handleError(res, new Error("Bad Parameters Provided"), 400);
 
-      const doc = await JsonDocModel.findById(id).lean().exec();
+      const document = await JsonDocModel.findById(id).lean().exec();
 
-      if (!Security.authorizedRetrieval(loggedUser, doc as JsonDoc))
-        return res.status(401).json({ message: "Unauthorized Access", status: 401 });
+      if (!document)
+        return JsonDocController.handleError(res, new Error("File not found"), 404);
 
-      if (!doc) return res.status(404).send({});
+      if (!Security.authorizedRetrieval(loggedUser, document as JsonDoc))
+        return JsonDocController.handleError(res, new Error("Unauthorized Access"), 401);
 
-      return res.status(200).json(doc._schema);
+      return res.status(200).json(document._schema);
 
     } catch (error) {
 
@@ -71,24 +76,32 @@ class JsonDocController {
   }
 
   public async remove(req: Request, res: Response) {
-
+    //TEST:
     const loggedUser = req.user,
       id = req.params.id;
 
     try {
 
-      if (!$.isValidId(id)) return res.status(404).send({});
+      if (!$.isValidId(id))
+        return JsonDocController.handleError(res, new Error("Bad Parameters Provided"), 400);
 
-      const document = await JsonDocModel.findById(id).exec();
+      const document: any = await JsonDocModel.findById(id).exec();
+
+      if (!document)
+        return JsonDocController.handleError(res, new Error("File not found"), 404);
 
       if (!Security.isAdmin(loggedUser, document.toObject() as JsonDoc))
-        return res.status(401).json({ message: "Unauthorized Access", status: 401 });
-
-      if (!document) return res.status(404).json({});
+        return JsonDocController.handleError(res, new Error("Unauthorized Access"), 401);
 
       await document.remove();
 
       res.status(200).send({});
+
+      document.members.forEach(member => {
+
+        userController.removeDocument(member.userId, id);
+
+      });
 
     } catch (error) {
 
@@ -106,19 +119,19 @@ class JsonDocController {
 
     try {
 
-      if (!$.isValidId(id)) return res.status(404).send({});
+      if (!$.isValidId(id))
+        return JsonDocController.handleError(res, new Error("Bad Parameters Provided"), 400);
 
-      if (_.isEmpty(_schema)) return res.status(422).json({
-        status: 422,
-        message: "Body is empty"
-      });
+      if (_.isEmpty(_schema))
+        return JsonDocController.handleError(res, new Error("Body can\'t be empty"), 422);
 
       const document: any = await JsonDocModel.findById(id).exec();
 
-      if (!document) return res.status(404).send({});
+      if (!document)
+        return JsonDocController.handleError(res, new Error("File not found"), 404);
 
       if (!Security.authorizedUpdate(loggedUser, document.toObject() as JsonDoc))
-        return res.status(401).json({ message: "Unauthorized Access", status: 401 });
+        return JsonDocController.handleError(res, new Error("Unauthorized Access"), 401);
 
       document._schema = _schema;
 
@@ -135,19 +148,22 @@ class JsonDocController {
   }
 
   public async updatePrivacy(req: Request, res: Response) {
-
+    //TEST:
     const id = req.params.id,
       loggedUser = req.user;
 
     try {
 
-      if (!$.isValidId(id)) return res.status(404).send({});
+      if (!$.isValidId(id))
+        return JsonDocController.handleError(res, new Error("Bad Parameters Provided"), 400);
 
-      if (!(req.params.privacy in privacy)) return res.status(400).json({ message: "Bad Parameters Provided", status: 400 });
+      if (!(req.params.privacy in privacy))
+        return JsonDocController.handleError(res, new Error("Bad Parameters Provided"), 400);
 
       const document: any = await JsonDocModel.findById(id).exec();
 
-      if (!document) return res.status(404).send({});
+      if (!document)
+        return JsonDocController.handleError(res, new Error("File not found"), 404);
 
       if (!Security.isAdmin(loggedUser, document.toObject() as JsonDoc))
         return res.status(401).json({ message: "Unauthorized Access", status: 401 });
@@ -176,20 +192,26 @@ class JsonDocController {
 
       if (!$.isValidId(id, userId)) return res.status(404).send({});
 
-      if (!(req.params.access in access)) return res.status(400).json({ message: "Bad Parameters Provided", status: 400 });
+      if (userId === loggedUser) return JsonDocController.handleError(res, new Error("Unauthorized Action"), 401);
+
+      if (!(req.params.access in access)) return JsonDocController.handleError(res, new Error("Bad Parameters Provided"), 400);
 
       const document: any = await JsonDocModel.findById(id).exec();
 
-      if (!document) return res.status(404).send({});
+      if (!document)
+        return JsonDocController.handleError(res, new Error("File not found"), 404);
 
       if (!Security.isAdmin(loggedUser, document.toObject() as JsonDoc))
-        return res.status(401).json({ message: "Unauthorized Access", status: 401 });
+        return JsonDocController.handleError(res, new Error("Unauthorized Access"), 401);
 
-      const idx = document.members.findIndex((member) => member.userId === userId);
+      const idx = document.members.findIndex((member) => member.userId.toString() === userId);
 
-      if (idx === -1)
+      if (idx === -1) {
+
         document.members.push({ userId: userId, access: access[req.params.access] });
-      else
+        await userController.addDocument(userId, id);
+
+      } else
         document.members[idx].access = access[req.params.access];
 
       await document.save();
@@ -205,7 +227,7 @@ class JsonDocController {
   }
 
   public async removeMember(req: Request, res: Response) {
-
+    //TODO: what happens if you remove the last member
     const userId = req.params.userId,
       id = req.params.id,
       loggedUser = req.user;
@@ -216,17 +238,23 @@ class JsonDocController {
 
       const document: any = await JsonDocModel.findById(id).exec();
 
-      if (!document) return res.status(404).send({});
+      if (!document)
+        return JsonDocController.handleError(res, new Error("File not found"), 404);
 
       if (!Security.isAdmin(loggedUser, document.toObject() as JsonDoc))
-        return res.status(401).json({ message: "Unauthorized Access", status: 401 });
+        return JsonDocController.handleError(res, new Error('Unauthorized Access'), 401);
 
-      const idx = document.members.findIndex((member) => member.userId === userId);
+      if (_.isEmpty(document.members)) return JsonDocController.handleError(res, new Error('Can\'t remove last member'), 400);
 
-      if (idx === -1) return res.status(404).send({});
+      const idx = document.members.findIndex((member) => member.userId.toString() === userId);
+
+      if (idx === -1)
+        return JsonDocController.handleError(res, new Error("User not found"), 404);
 
       document.members.splice(idx, 1);
       await document.save();
+
+      await userController.removeDocument(userId, id);
 
       return res.status(200).json({ message: "Update was successful", status: 200 });
 

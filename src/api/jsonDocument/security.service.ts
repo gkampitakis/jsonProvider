@@ -6,7 +6,7 @@ class SecurityService {
 
     if (jsonDoc.privacy === privacy.public) return true;
 
-    //TODO: Future work connect it with dock access (//NOTE: the dock access is like a revoke token)
+    //NOTE: Future work connect it with dock access (the dock access is like a revoke token)
 
     if (!userId) return false;
 
@@ -20,7 +20,7 @@ class SecurityService {
 
     if (!userId) return false;
 
-    const idx: number = jsonDoc.members.findIndex(member => userId === member.userId
+    const idx: number = jsonDoc.members.findIndex(member => userId === member.userId.toString()
       && member.access === access.admin);
 
     return idx !== -1;
@@ -28,7 +28,6 @@ class SecurityService {
   }
 
   public authorizedUpdate(userId: string, jsonDoc: JsonDoc): boolean {
-    //FIXME: only if he is registered someone can do changes
     if (!userId) return false;
 
     const idx: number = jsonDoc.members.findIndex(member => userId === member.userId

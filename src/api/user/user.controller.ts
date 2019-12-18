@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { User, UserI } from './user.model';
-import { ObjectID } from 'mongodb';
 import $ from '../../util/helper.service';
+import { access } from "../jsonDocument/jsonDoc.model";
 
 class UserController {
 
@@ -28,9 +28,12 @@ class UserController {
 
     try {
 
-      if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
+      if (!$.isValidId(req.params.id)) return res.status(404).send({});
 
-      const user = await User.findById(req.params.id).lean().exec();
+      const user = await User.findById(req.params.id)
+        .populate('documents')//FIXME:
+        .lean()
+        .exec();
 
       if (!user) return res.status(404).send({});
 
@@ -49,7 +52,7 @@ class UserController {
 
     try {
 
-      if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
+      if (!$.isValidId(req.params.id)) return res.status(404).send({});
 
       const user: UserI = await User.findById(req.params.id).exec() as UserI;
 
@@ -71,7 +74,7 @@ class UserController {
 
     try {
 
-      if (!ObjectID.isValid(req.params.id)) return res.status(404).send({});
+      if (!$.isValidId(req.params.id)) return res.status(404).send({});
 
       const user: UserI = await User.findById(req.params.id).exec() as UserI;
 
@@ -112,6 +115,66 @@ class UserController {
 
     $.Logger.error(error.message);
     return res.status(status).json(error);
+
+  }
+
+  public addDocument(id: string, documentId: string): Promise<Error> {
+
+    return new Promise(async (resolve, reject) => {
+
+      try {
+
+        const user: UserI = await User.findById(id).exec() as UserI;
+
+        if (!user) return reject(new Error('User not found'));
+
+        const idx = user.documents.findIndex((document: any) => document === documentId);
+
+        if (idx !== -1) return resolve();
+
+        user.documents.push(documentId);
+
+        await user.save();
+
+        resolve();
+
+      } catch (error) {
+
+        reject(error);
+
+      }
+
+    });
+
+  }
+
+  public removeDocument(id: string, documentId: string): Promise<Error> {
+
+    return new Promise(async (resolve, reject) => {
+
+      try {
+
+        const user: UserI = await User.findById(id).exec() as UserI;
+
+        if (!user) return reject(new Error('User not found'));
+
+        const idx = user.documents.findIndex((document: any) => document.toString() === documentId);
+
+        if (idx === -1) return resolve();
+
+        user.documents.splice(idx, 1);
+
+        await user.save();
+
+        resolve();
+
+      } catch (error) {
+
+        reject(error);
+
+      }
+
+    });
 
   }
 
