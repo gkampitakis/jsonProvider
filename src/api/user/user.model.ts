@@ -116,7 +116,7 @@ userSchema.pre<UserI>('save', function (next) {
 
   }
 
-  if (!validatePresenceOf(this.password)) {
+  if (!validatePresenceOf(this.password)) {//TEST: this needs testing
 
     return next(new Error('Invalid password'));
 

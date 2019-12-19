@@ -12,7 +12,7 @@ export interface TokenModel extends Document {
 
 class TokenController {
 
-  public create = async (userId: string) => {
+  public async create(userId: string) {
 
     if (!$.isValidId(userId)) throw new Error('Invalid id provided');
 
@@ -25,7 +25,7 @@ class TokenController {
 
   }
 
-  public remove = async (userId: string) => {//TODO: Needs testing
+  public async remove(userId: string) {//TODO: Needs testing
 
     if (!$.isValidId(userId)) throw new Error('Invalid id provided');
 
@@ -37,7 +37,7 @@ class TokenController {
 
   }
 
-  public retrieve = async (userId: string) => {//TODO: Needs testing
+  public async retrieve(userId: string) {//TODO: Needs testing
 
     if (!$.isValidId(userId)) throw new Error('Invalid id provided');
 
@@ -74,6 +74,13 @@ class TokenController {
         });
 
     });
+
+  }
+
+
+  public invalidateTokens(userId: string): Promise<any> {
+
+    return tokenModel.deleteMany({ userId: userId }).exec();
 
   }
 

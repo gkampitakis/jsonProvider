@@ -1,11 +1,21 @@
 import { Request, Response } from 'express';
 import { User, UserI } from './user.model';
 import $ from '../../util/helper.service';
-import { access } from "../jsonDocument/jsonDoc.model";
+import { tokenController } from "../auth/token/token.controller";
 
 class UserController {
 
-  public create = async (req: Request, res: Response) => {
+  private static handleError(res: Response, error: Error, status = 500) {
+
+    $.Logger.error(error.message);
+    return res.status(status).json({
+      message: error.message,
+      status: status
+    });
+
+  }
+
+  public async create(req: Request, res: Response) {
 
     try {
 
@@ -18,14 +28,14 @@ class UserController {
 
     } catch (error) {
 
-      this.handleError(res, error);
+      UserController.handleError(res, error);
 
     }
 
   }
 
-  public retrieve = async (req: Request, res: Response) => {
-
+  public async retrieve(req: Request, res: Response) {
+    //TODO: this needs to see only the viewable fields
     try {
 
       if (!$.isValidId(req.params.id)) return res.status(404).send({});
@@ -41,7 +51,7 @@ class UserController {
 
     } catch (error) {
 
-      this.handleError(res, error);
+      UserController.handleError(res, error);
 
     }
 
@@ -50,35 +60,43 @@ class UserController {
 
   public async remove(req: Request, res: Response) {
 
+    const loggedUser = req.user;
+
+    if (!loggedUser)
+      return UserController.handleError(res, new Error("Need to be registered"), 401);
+
     try {
 
-      if (!$.isValidId(req.params.id)) return res.status(404).send({});
+      const user: UserI = await User.findById(loggedUser).exec() as UserI;
 
-      const user: UserI = await User.findById(req.params.id).exec() as UserI;
-
-      if (!user) return res.status(404).json({});
+      if (!user) //NOTE: if we end up here something has gone really bad
+        return UserController.handleError(res, new Error("User not found"), 404);
 
       await user.remove();
 
       res.status(200).send({});
+      tokenController.invalidateTokens(user._id);
 
     } catch (error) {
 
-      this.handleError(res, error);
+      UserController.handleError(res, error);
 
     }
 
   }
 
-  public update = async (req: Request, res: Response) => {
+  public async update(req: Request, res: Response) {
+
+    const loggedUser = req.user;
+
+    if (!loggedUser)
+      return UserController.handleError(res, new Error("Need to be registered"), 401);
 
     try {
+      const user: UserI = await User.findById(loggedUser).exec() as UserI;
 
-      if (!$.isValidId(req.params.id)) return res.status(404).send({});
-
-      const user: UserI = await User.findById(req.params.id).exec() as UserI;
-
-      if (!user) return res.status(404).json({});
+      if (!user)//NOTE: if we end up here something has gone really bad
+        return UserController.handleError(res, new Error("User not found"), 404);
 
       user.username = req.body?.username || user.username;
       user.email = req.body?.email || user.email;
@@ -91,16 +109,39 @@ class UserController {
 
     } catch (error) {
 
-      this.handleError(res, error);
+      UserController.handleError(res, error);
 
     }
 
   }
 
 
-  // public me(req: Request, res: Response) {
-  //FIXME: when tokens are implemented pass the userId on the req object
-  // }
+  public async me(req: Request, res: Response) {
+
+    const loggedUser = req.user;
+
+    if (!loggedUser)
+      return UserController.handleError(res, new Error("Need to be registered"), 401);
+
+    try {
+
+      const user = await User.findById(loggedUser)
+        .populate('documents')//FIXME:
+        .lean()
+        .exec();
+
+      if (!user)//NOTE: if we end up here something has gone really bad
+        return UserController.handleError(res, new Error("User not found"), 404);
+
+      return res.status(200).json(this.stripPassword(user));
+
+    } catch (error) {
+
+      UserController.handleError(res, error);
+
+    }
+
+  }
 
   private stripPassword(user: UserI): Partial<UserI> {
 
@@ -108,13 +149,6 @@ class UserController {
     delete user.salt;
 
     return user;
-
-  }
-
-  private handleError(res: Response, error: Error, status = 500) {
-
-    $.Logger.error(error.message);
-    return res.status(status).json(error);
 
   }
 
@@ -179,6 +213,5 @@ class UserController {
   }
 
 }
-
 
 export default new UserController();
