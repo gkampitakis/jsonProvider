@@ -1,0 +1,7 @@
+{
+  "version": "1.2.0",
+  "description": {
+    "News": "user controller implementing functions",
+    "Bugs": "bug on deployment and on controllers minor fixes"
+  }
+}
