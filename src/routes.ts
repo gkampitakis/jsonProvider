@@ -10,7 +10,7 @@ export function setupRoutes(app: express.Application) {
   app.use('/user', userRouter);
   app.use('/auth', tokenRouter);
 
-  app.use('/', $.versionInfo);
+  app.use('/version', $.versionInfo);
 
   // All other routes should return a 404
   app.route('/*').get((req: express.Request, res: express.Response) => {

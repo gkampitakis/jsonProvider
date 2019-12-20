@@ -10,7 +10,7 @@ class SecurityService {
 
     if (!userId) return false;
 
-    const idx: number = jsonDoc.members.findIndex(member => userId === member.userId);
+    const idx: number = jsonDoc.members.findIndex(member => userId === member.userId.toString());
 
     return idx !== -1;
 
@@ -30,7 +30,7 @@ class SecurityService {
   public authorizedUpdate(userId: string, jsonDoc: JsonDoc): boolean {
     if (!userId) return false;
 
-    const idx: number = jsonDoc.members.findIndex(member => userId === member.userId
+    const idx: number = jsonDoc.members.findIndex(member => userId === member.userId.toString()
       && member.access >= access.write);
 
     return idx !== -1;

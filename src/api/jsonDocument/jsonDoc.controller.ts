@@ -76,7 +76,7 @@ class JsonDocController {
   }
 
   public async remove(req: Request, res: Response) {
-    //TEST:
+
     const loggedUser = req.user,
       id = req.params.id;
 
@@ -148,7 +148,7 @@ class JsonDocController {
   }
 
   public async updatePrivacy(req: Request, res: Response) {
-    //TEST:
+
     const id = req.params.id,
       loggedUser = req.user;
 

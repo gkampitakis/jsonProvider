@@ -29,6 +29,8 @@ const authorizationSchema = new Schema({
   },
   access: {
     type: Number,
+    min: 0,
+    max: 2,
     default: access.admin
   }
 }, { _id: false });
@@ -36,6 +38,8 @@ const authorizationSchema = new Schema({
 const jsonDocSchema = new Schema({
   privacy: {
     type: Number,
+    min: 0,
+    max: 1,
     default: privacy.public
   },
   _schema: {

@@ -25,7 +25,7 @@ class TokenController {
 
   }
 
-  public async remove(userId: string) {//TODO: Needs testing
+  public async remove(userId: string) {
 
     if (!$.isValidId(userId)) throw new Error('Invalid id provided');
 
@@ -37,11 +37,13 @@ class TokenController {
 
   }
 
-  public async retrieve(userId: string) {//TODO: Needs testing
+  public async retrieve(userId: string) {
 
     if (!$.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token = await tokenModel.findOne({ userId: userId }).lean().exec();
+
+    if (!token) throw new Error('Token not found');
 
     return token;
 

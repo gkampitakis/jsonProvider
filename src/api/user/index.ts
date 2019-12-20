@@ -1,13 +1,16 @@
 import { Router } from 'express';
 import controller from './user.controller';
+import utils from '../../util/helper.service';
 
-const userController: Router = Router();
+const userRouter: Router = Router();
 
-userController.post('/', controller.create);
-userController.get('/me', controller.me);
-userController.get('/:id', controller.retrieve);
+userRouter.use(utils.prepareRequestUser);
+
+userRouter.post('/', controller.create);
+userRouter.get('/me', controller.me);
+userRouter.get('/:id', controller.retrieve);
 //FIXME: return only visible data
-userController.put('/', controller.update);
-userController.delete('/', controller.remove);
+userRouter.put('/', controller.update);
+userRouter.delete('/', controller.remove);
 
-export default userController;
+export default userRouter;

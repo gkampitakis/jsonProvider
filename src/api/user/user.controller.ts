@@ -24,7 +24,7 @@ class UserController {
       const doc = await user.save(),
         result = doc.toObject();
 
-      res.status(200).json(this.stripPassword(result));
+      res.status(200).json(UserController.stripPassword(result));
 
     } catch (error) {
 
@@ -47,7 +47,7 @@ class UserController {
 
       if (!user) return res.status(404).send({});
 
-      return res.status(200).json(this.stripPassword(user));
+      return res.status(200).json(UserController.stripPassword(user));
 
     } catch (error) {
 
@@ -59,7 +59,7 @@ class UserController {
 
 
   public async remove(req: Request, res: Response) {
-
+    //TODO: need to delete all the files that he only has access :O 
     const loggedUser = req.user;
 
     if (!loggedUser)
@@ -105,7 +105,7 @@ class UserController {
 
       await user.save();
 
-      return res.status(200).json(this.stripPassword(user.toObject()));
+      return res.status(200).json(UserController.stripPassword(user.toObject()));
 
     } catch (error) {
 
@@ -126,14 +126,14 @@ class UserController {
     try {
 
       const user = await User.findById(loggedUser)
-        .populate('documents')//FIXME:
+        .populate('documents','-_id -__v')//FIXME:
         .lean()
         .exec();
 
       if (!user)//NOTE: if we end up here something has gone really bad
         return UserController.handleError(res, new Error("User not found"), 404);
 
-      return res.status(200).json(this.stripPassword(user));
+      return res.status(200).json(UserController.stripPassword(user));
 
     } catch (error) {
 
@@ -143,7 +143,7 @@ class UserController {
 
   }
 
-  private stripPassword(user: UserI): Partial<UserI> {
+  private static stripPassword(user: UserI): Partial<UserI> {
 
     delete user.password;
     delete user.salt;
