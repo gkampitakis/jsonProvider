@@ -1,7 +1,7 @@
 {
-  "version": "1.2.0",
+  "version": "1.4.1",
   "description": {
-    "News": "user controller implementing functions",
-    "Bugs": "bug on deployment and on controllers minor fixes"
+    "News": "Implementing Email Controller",
+    "Bugs": "Deployment"
   }
 }

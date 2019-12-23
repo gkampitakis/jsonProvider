@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { User, UserI } from './user.model';
 import $ from '../../util/helper.service';
 import { tokenController } from "../auth/token/token.controller";
+import emailController from "../communication/email/email.controller";
 
 class UserController {
 
@@ -116,6 +117,23 @@ class UserController {
   }
 
 
+  public async emailTest(req: Request, res: Response) {
+
+    try {
+
+      const test = await emailController.send('gkabitakis@gmail.com', 'test',
+        { password: 'test', fname: 'myname', lname: 'test2' }, 'changePassword');
+
+      res.status(200).json(test);
+
+    } catch (error) {
+
+      UserController.handleError(res, error);
+
+    }
+
+  }
+
   public async me(req: Request, res: Response) {
 
     const loggedUser = req.user;
@@ -126,7 +144,7 @@ class UserController {
     try {
 
       const user = await User.findById(loggedUser)
-        .populate('documents','-_id -__v')//FIXME:
+        .populate('documents', '-_id -__v')
         .lean()
         .exec();
 
