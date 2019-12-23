@@ -5,12 +5,14 @@ import mongoose from 'mongoose';
 import { setupExpress } from './config/express';
 import { setupRoutes } from './routes';
 import $ from './util/helper.service';
-import { config } from './config/environment';
+import { Configurator } from './config/configurator';
 
 export class App {
 
   private app: express.Application;
   private server: http.Server;
+  @Configurator()
+  private config;
 
   constructor() {
 
@@ -30,12 +32,12 @@ export class App {
 
     return new Promise((resolve, reject) => {
 
-      if (!config.mongo.connect) reject();
+      if (!this.config.mongo.connect) reject();
 
-      mongoose.connect(config.mongo.uri, config.mongo.options)
+      mongoose.connect(this.config.mongo.uri, this.config.mongo.options)
         .then(() => {
 
-          $.Logger.info('MongoDB is connected on ' + config.mongo.uri);
+          $.Logger.info('MongoDB is connected on ' + this.config.mongo.uri);
 
           resolve();
 
@@ -61,8 +63,8 @@ export class App {
 
   private startServer() {
 
-    this.server.listen(config.port, () => {
-      $.Logger.info(`Express server listening on port ${config.port}`);
+    this.server.listen(this.config.port, () => {
+      $.Logger.info(`Express server listening on port ${this.config.port}`);
     });
 
   }

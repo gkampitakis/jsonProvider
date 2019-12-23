@@ -21,12 +21,16 @@ switch (process.env.NODE_ENV) {
 
 dotenv.config({ path: _path });
 
-const all = {
+
+export default {
 
   env: process.env.NODE_ENV,
   port: process.env.PORT,
   secrets: {
     authentication: process.env.SECRET
+  },
+  keys: {
+    sendgrid: process.env.SENDGRID_KEY
   },
   mongo: {
     connect: true,
@@ -40,7 +44,3 @@ const all = {
   },
   root: path.normalize(`${__dirname}/../../..`)
 };
-
-export const config = (
-  all
-);
