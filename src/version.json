@@ -1,7 +1,7 @@
 {
-  "version": "1.2.0",
+  "version": "1.4.0",
   "description": {
-    "News": "user controller implementing functions",
-    "Bugs": "bug on deployment and on controllers minor fixes"
+    "News": "Implement Email Controller",
+    "Bugs": "Deployment on Heroku doesn't work anymore"
   }
 }

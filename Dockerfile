@@ -10,6 +10,10 @@ RUN npm install
 
 COPY . /usr/src/app
 
+RUN chmod +x ./scripts/emailTemplates.sh
+
 EXPOSE 5000
 
 CMD ["npm","run","prod"]
+
+RUN ./scripts/emailTemplates.sh

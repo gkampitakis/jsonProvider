@@ -1,6 +1,6 @@
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
-import { config } from '../../config/environment';
+import config from '../../config/environment';
 import axios from 'axios';
 
 chai.use(chaiHttp);
