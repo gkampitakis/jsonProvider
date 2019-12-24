@@ -1,0 +1,7 @@
+/data
+/node_modules
+/build
+.vscode
+/.node-dev.json
+/.eslintrc.json
+README.md

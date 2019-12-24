@@ -7,7 +7,7 @@ const userRouter: Router = Router();
 userRouter.use(utils.prepareRequestUser);
 
 userRouter.post('/', controller.create);
-// userRouter.get('/email', controller.emailTest);
+userRouter.get('/email', controller.emailTest);
 userRouter.get('/me', controller.me);
 userRouter.get('/:id', controller.retrieve);
 //FIXME: return only visible data
