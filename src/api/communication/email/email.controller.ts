@@ -40,11 +40,11 @@ class EmailController {
       transporter.use('compile', hbs({
         viewEngine: {
           extName: '.handlebars',//NOTE: stupid placeholders for handlebars package
-          partialsDir: path.join(__dirname, './views/'),
-          layoutsDir: path.join(__dirname, './views/'),
+          partialsDir: path.join(process.cwd(), './emailViews/'),
+          layoutsDir: path.join(process.cwd(), './emailViews/'),
           defaultLayout: template + '.handlebars'
         },
-        viewPath: path.join(__dirname, './views/')
+        viewPath: path.join(process.cwd(), './emailViews/')
       }));
 
 

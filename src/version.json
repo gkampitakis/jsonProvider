@@ -1,7 +1,7 @@
 {
-  "version": "1.4.1",
+  "version": "1.4.3",
   "description": {
-    "News": "Implementing Email Controller",
-    "Bugs": "Deployment"
+    "News": "Implement Email Controller",
+    "Bugs": "Deployment on Heroku doesn't work anymore. Trying to understand why not and migrate to Digital Ocean Deployment"
   }
 }
