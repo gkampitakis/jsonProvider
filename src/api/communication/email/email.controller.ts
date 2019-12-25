@@ -3,7 +3,7 @@ import sendGrid from 'nodemailer-sendgrid';
 import hbs from 'nodemailer-express-handlebars';
 import validator from 'validator';
 import path from 'path';
-import { Configurator } from '../../../config/configurator';
+import { Configurator } from '../../../util/decorators/configurator';
 
 class EmailController {
 

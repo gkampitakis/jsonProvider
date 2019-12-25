@@ -1,5 +1,5 @@
-import environment from './environment/index';
-import config from './config.json';
+import environment from '../../config/environment/index';
+import config from '../../config/config.json';
 import _ from 'lodash';
 
 export function Configurator(...args: Array<string>) {

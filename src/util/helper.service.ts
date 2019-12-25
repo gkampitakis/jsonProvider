@@ -1,20 +1,18 @@
 import { Request, Response } from 'express';
-import { getLogger, Logger } from 'log4js';
 import tokenParser from 'parse-bearer-token';
 import { tokenController } from '../api/auth/token/token.controller';
 import { ObjectID } from 'mongodb';
 import version from '../version.json';
+import { _Logger, Logger } from "./decorators/logger";
 
 class HelperService {
   private static instance: HelperService;
-  private _logger: Logger;
+  @Logger('HelperService')
+  private logger: _Logger;
 
   private constructor() {
 
-    this._logger = getLogger();
-    this._logger.level = 'debug';
-
-    this._logger.info('Helper Function Instantiated');
+    this.logger.info('Helper Service Instantiated');
 
   }
 
@@ -24,13 +22,6 @@ class HelperService {
       HelperService.instance = new HelperService();
 
     return HelperService.instance;
-
-  }
-
-
-  public get Logger(): Logger {
-
-    return this._logger;
 
   }
 

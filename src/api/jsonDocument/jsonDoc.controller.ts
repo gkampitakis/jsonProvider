@@ -4,12 +4,16 @@ import $ from "../../util/helper.service";
 import _ from "lodash";
 import Security from "./security.service";
 import userController from "../user/user.controller";
+import { _Logger, Logger } from "../../util/decorators/logger";
 
 class JsonDocController {
 
+  @Logger('JsonDocController')
+  private static logger: _Logger
+
   private static handleError(res: Response, error: Error, status = 500) {
 
-    $.Logger.error(error.message);
+    this.logger.error(error.message);
     return res.status(status).json({
       message: error.message,
       status: status

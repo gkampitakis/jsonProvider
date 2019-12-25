@@ -4,8 +4,8 @@ import bluebird from 'bluebird';
 import mongoose from 'mongoose';
 import { setupExpress } from './config/express';
 import { setupRoutes } from './routes';
-import $ from './util/helper.service';
-import { Configurator } from './config/configurator';
+import { Configurator } from './util/decorators/configurator';
+import { Logger, _Logger } from './util/decorators/logger';
 
 export class App {
 
@@ -13,6 +13,8 @@ export class App {
   private server: http.Server;
   @Configurator()
   private config;
+  @Logger('App')
+  private logger: _Logger;
 
   constructor() {
 
@@ -37,7 +39,7 @@ export class App {
       mongoose.connect(this.config.mongo.uri, this.config.mongo.options)
         .then(() => {
 
-          $.Logger.info('MongoDB is connected on ' + this.config.mongo.uri);
+          this.logger.info('MongoDB is connected on ' + this.config.mongo.uri);
 
           resolve();
 
@@ -45,7 +47,7 @@ export class App {
 
       mongoose.connection.on('error', err => {
 
-        $.Logger.error(`MongoDB connection error: ${err}`);
+        this.logger.error(`MongoDB connection error: ${err}`);
 
         reject();
 
@@ -64,7 +66,7 @@ export class App {
   private startServer() {
 
     this.server.listen(this.config.port, () => {
-      $.Logger.info(`Express server listening on port ${this.config.port}`);
+      this.logger.info(`Express server listening on port ${this.config.port}`);
     });
 
   }

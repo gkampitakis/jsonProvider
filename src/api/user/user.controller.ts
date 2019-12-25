@@ -3,12 +3,16 @@ import { User, UserI } from './user.model';
 import $ from '../../util/helper.service';
 import { tokenController } from "../auth/token/token.controller";
 import emailController from "../communication/email/email.controller";
+import { _Logger, Logger } from "../../util/decorators/logger";
 
 class UserController {
 
+  @Logger('JsonDocController')
+  private static logger: _Logger
+
   private static handleError(res: Response, error: Error, status = 500) {
 
-    $.Logger.error(error.message);
+    this.logger.error(error.message);
     return res.status(status).json({
       message: error.message,
       status: status
