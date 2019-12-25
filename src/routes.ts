@@ -6,6 +6,8 @@ import $ from './util/helper.service';
 
 export function setupRoutes(app: express.Application) {
 
+  app.use($.routerLogger);
+
   app.use('/json/doc', jsonDocRouter);
   app.use('/user', userRouter);
   app.use('/auth', tokenRouter);

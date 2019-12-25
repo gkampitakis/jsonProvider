@@ -58,6 +58,15 @@ class HelperService {
 
   }
 
+  public routerLogger(req: Request, res: Response, next: Function) {
+
+    const logger = new _Logger('Router', true);
+    logger.log(`${req.method} |`, req.path);
+
+    next();
+
+  }
+
 }
 
 export default HelperService.getInstance();
