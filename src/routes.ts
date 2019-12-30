@@ -2,10 +2,11 @@ import express from 'express';
 import jsonDocRouter from './api/jsonDocument';
 import userRouter from './api/user';
 import tokenRouter from './api/auth/token';
-import $ from './util/helper.service';
-
+import { HelperService } from './util/helper.service';
+//TODO: dont like how this is handled maybe need change
 export function setupRoutes(app: express.Application) {
 
+  const $ = new HelperService();
   app.use($.routerLogger);
 
   app.use('/json/doc', jsonDocRouter);

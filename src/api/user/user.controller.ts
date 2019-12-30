@@ -1,14 +1,23 @@
 import { Request, Response } from 'express';
 import { User, UserI } from './user.model';
-import $ from '../../util/helper.service';
+import { HelperService } from '../../util/helper.service';
 import { tokenController } from "../auth/token/token.controller";
 import emailController from "../communication/email/email.controller";
 import { _Logger, Logger } from "../../util/decorators/logger";
+import autoBind from 'auto-bind';
 
 class UserController {
 
   @Logger('JsonDocController')
   private static logger: _Logger
+  private helper: HelperService;
+
+  constructor() {
+
+    autoBind(this);
+    this.helper = new HelperService();//TODO: this will be changed
+
+  }
 
   private static handleError(res: Response, error: Error, status = 500) {
 
@@ -43,7 +52,7 @@ class UserController {
     //TODO: this needs to see only the viewable fields
     try {
 
-      if (!$.isValidId(req.params.id)) return res.status(404).send({});
+      if (!this.helper.isValidId(req.params.id)) return res.status(404).send({});
 
       const user = await User.findById(req.params.id)
         .populate('documents')//FIXME:

@@ -4,11 +4,11 @@
   "description": "Simple Server for storing and serving json files",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register src/**/*.test.ts",
-    "test:env": "NODE_ENV=test ts-node-dev --respawn --transpileOnly ./src/index.ts",
+    "test": "rimraf dist coverage && npm run eslint && jest",
     "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts",
     "prod": "tsc && NODE_ENV=production node ./build/index.js",
     "start": "NODE_ENV=production node ./build/index.js",
+    "eslint": "eslint \"**/*.ts\"",
     "build": "rimraf ./build && tsc"
   },
   "author": "George Kampitakis",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@gkampitakis/tslog": "file:../logger",
     "async": "^3.1.0",
+    "auto-bind": "^4.0.0",
     "bluebird": "^3.7.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -30,17 +31,20 @@
     "parse-bearer-token": "^1.0.1",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "reflect-metadata": "^0.1.13",
     "ts-node": "^8.5.2",
+    "typedi": "^0.8.0",
     "typescript": "^3.7.2",
     "unique-names-generator": "^4.1.1",
     "validator": "^12.1.0"
   },
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.1.3",
     "@types/async": "^3.0.3",
-    "@types/chai": "^4.2.5",
     "@types/cors": "^2.8.6",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.2",
+    "@types/jest": "^24.0.25",
     "@types/lodash": "^4.14.149",
     "@types/mocha": "^5.2.7",
     "@types/mongoose": "^5.5.32",
@@ -50,14 +54,52 @@
     "@typescript-eslint/eslint-plugin": "^2.7.0",
     "@typescript-eslint/parser": "^2.7.0",
     "axios": "^0.19.0",
-    "chai": "^4.2.0",
-    "chai-http": "^4.3.0",
     "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
     "husky": "^3.1.0",
+    "jest": "^24.9.0",
+    "jest-sonar-reporter": "^2.0.0",
     "mocha": "^6.2.2",
     "rimraf": "^3.0.0",
+    "ts-jest": "^24.2.0",
     "ts-node-dev": "^1.0.0-pre.44"
+  },
+  "jest": {
+    "preset": "@shelf/jest-mongodb",
+    "verbose": true,
+    "collectCoverage": false,
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testResultsProcessor": "jest-sonar-reporter",
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/config.{ts,tsx}",
+      "!src/**/theme.{ts,tsx}",
+      "!src/**/index.{ts,tsx}",
+      "!src/**/*.d.ts"
+    ]
+  },
+  "jestSonar": {
+    "reportPath": "coverage",
+    "reportFile": "test-report.xml",
+    "indent": 4
+  },
+  "mongodbMemoryServerOptions": {
+    "instance": {
+      "dbName": "jest"
+    },
+    "binary": {
+      "version": "4.0.3",
+      "skipMD5": true
+    },
+    "autoStart": false
   }
 }

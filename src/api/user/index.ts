@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import controller from './user.controller';
-import utils from '../../util/helper.service';
+import { HelperService } from '../../util/helper.service';
 
 const userRouter: Router = Router();
-
-userRouter.use(utils.prepareRequestUser);
+const helper = new HelperService();
+//TODO: don like this probably needs changing 
+userRouter.use(helper.prepareRequestUser);
 
 userRouter.post('/', controller.create);
 userRouter.get('/email', controller.emailTest);

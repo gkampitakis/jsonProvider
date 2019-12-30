@@ -10,9 +10,6 @@ switch (process.env.NODE_ENV) {
   case 'production':
     _path = path.join(__dirname, '/../../../.env.production');
     break;
-  case 'test':
-    _path = path.join(__dirname, '/../../../.env.test');
-    break;
   default:
     process.env.NODE_ENV = 'development';
     _path = path.join(__dirname, '/../../../.env.development');

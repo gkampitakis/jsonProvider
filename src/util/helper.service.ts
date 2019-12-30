@@ -3,27 +3,9 @@ import tokenParser from 'parse-bearer-token';
 import { tokenController } from '../api/auth/token/token.controller';
 import { ObjectID } from 'mongodb';
 import version from '../version.json';
-import { _Logger, Logger } from "./decorators/logger";
+import { _Logger } from "./decorators/logger";
 
-class HelperService {
-  private static instance: HelperService;
-  @Logger('HelperService')
-  private logger: _Logger;
-
-  private constructor() {
-
-    this.logger.info('Helper Service Instantiated');
-
-  }
-
-  static getInstance() {
-
-    if (!HelperService.instance)
-      HelperService.instance = new HelperService();
-
-    return HelperService.instance;
-
-  }
+export class HelperService {
 
   public async prepareRequestUser(req: Request, res: Response, next: Function) {
 
@@ -68,5 +50,3 @@ class HelperService {
   }
 
 }
-
-export default HelperService.getInstance();

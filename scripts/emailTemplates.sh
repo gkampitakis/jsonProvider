@@ -1,1 +1,0 @@
-cp -r src/api/communication/email/views build/api/communication/email/views

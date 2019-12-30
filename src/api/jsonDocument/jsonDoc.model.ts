@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
 export enum access {
@@ -12,7 +12,7 @@ export enum privacy {
   public
 }
 
-export interface JsonDoc {
+export interface JsonDoc extends Document {
   privacy: privacy;
   _schema: {};
   members: [{
