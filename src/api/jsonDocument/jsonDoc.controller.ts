@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
-import { HelperService } from "../../util/helper.service";
 import { _Logger, Logger } from "../../util/decorators/logger";
 import { Service } from 'typedi';
 import JsonDocService from "./jsonDoc.service";
 import autoBind from 'auto-bind';
 import _ from 'lodash';
-import { privacy, access } from "./jsonDoc.model";
 
 @Service()
 class JsonDocController {
@@ -14,8 +12,7 @@ class JsonDocController {
   private logger: _Logger;
 
   constructor(
-    private jsonService: JsonDocService,
-    private helperService: HelperService
+    private jsonService: JsonDocService
   ) {
 
     autoBind(this);
@@ -59,9 +56,6 @@ class JsonDocController {
       id: req.params.id
     };
 
-    if (!this.helperService.isValidId(payload.id))
-      return this.handleError(res, new Error("Bad Parameters Provided"), 400);
-
     try {
 
       const result = await this.jsonService.retrieveJson(payload);
@@ -81,9 +75,6 @@ class JsonDocController {
       user: req.user,
       id: req.params.id
     };
-
-    if (!this.helperService.isValidId(payload.id))
-      return this.handleError(res, new Error("Bad Parameters Provided"), 400);
 
     try {
 
@@ -105,9 +96,6 @@ class JsonDocController {
       id: req.params.id,
       user: req.user
     };
-
-    if (!this.helperService.isValidId(payload.id))
-      return this.handleError(res, new Error("Bad Parameters Provided"), 400);
 
     if (_.isEmpty(payload._schema))
       return this.handleError(res, new Error("Body can\'t be empty"), 422);
@@ -133,12 +121,6 @@ class JsonDocController {
       privacy: req.params.privacy
     };
 
-    if (!this.helperService.isValidId(payload.id))
-      return this.handleError(res, new Error("Bad Parameters Provided"), 400);
-
-    if (!(payload.privacy in privacy))
-      return this.handleError(res, new Error("Bad Parameters Provided"), 400);
-
     try {
 
       await this.jsonService.updateJsonPrivacy(payload);
@@ -161,14 +143,6 @@ class JsonDocController {
       access: req.params.access
     };
 
-    if (!this.helperService.isValidId(payload.id, payload.userId)) return res.status(404).send({});
-
-    if (payload.userId === payload.user)
-      return this.handleError(res, new Error("Unauthorized Action"), 401);
-
-    if (!(payload.access in access))
-      return this.handleError(res, new Error("Bad Parameters Provided"), 400);
-
     try {
 
       await this.jsonService.addMemberJson(payload);
@@ -189,9 +163,6 @@ class JsonDocController {
       id: req.params.id,
       user: req.user
     };
-
-    if (!this.helperService.isValidId(payload.id, payload.userId))
-      return res.status(404).send({});
 
     try {
 

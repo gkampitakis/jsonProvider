@@ -6,3 +6,4 @@ package-lock.json
 /data
 /.node-dev.json
 .vscode
+/coverage

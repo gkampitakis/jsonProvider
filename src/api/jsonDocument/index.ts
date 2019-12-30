@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import 'reflect-metadata';
 import controller from './jsonDoc.controller';
 import { HelperService } from '../../util/helper.service';
 import { Container } from "typedi";

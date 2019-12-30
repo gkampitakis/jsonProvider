@@ -2,9 +2,13 @@ import { JsonDoc, access, privacy, JsonDocModel } from "./jsonDoc.model";
 import { Service } from "typedi";
 import userController from "../user/user.controller";
 import _ from 'lodash';
+import { HelperService } from "../../util/helper.service";
+import 'reflect-metadata';
 
 @Service()
 class JsonDocService {
+
+  constructor(private helperService: HelperService) { }
 
   private authorizedRetrieval(userId: string, jsonDoc: JsonDoc): boolean {
 
@@ -48,7 +52,7 @@ class JsonDocService {
       const { user, body } = payload;
 
       if (!user)
-        return reject({ error: new Error('Need to be registered'), status: 401 });
+        return reject(this.errorObject('Need to be registered', 401));
 
       const doc: any = new JsonDocModel(body);
       doc.members.push({ userId: user });
@@ -78,12 +82,15 @@ class JsonDocService {
 
       try {
 
+        if (!this.helperService.isValidId(payload.id))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
+
         const document = await JsonDocModel.findById(id).lean().exec();
         if (!document)
-          return reject({ error: new Error("File not found"), status: 404 });
+          return reject(this.errorObject("File not found", 404));
 
         if (!this.authorizedRetrieval(user, document))
-          return reject({ error: new Error("Unauthorized Access"), status: 401 });
+          return reject(this.errorObject("Unauthorized Access", 401));
 
         resolve(document);
 
@@ -105,12 +112,15 @@ class JsonDocService {
 
       try {
 
+        if (!this.helperService.isValidId(payload.id))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
+
         const document: any = await JsonDocModel.findById(id).exec();
         if (!document)
-          return reject({ error: new Error("File not found"), status: 404 });
+          return reject(this.errorObject("File not found", 404));
 
         if (!this.isAdmin(user, document.toObject()))
-          return reject({ error: new Error("Unauthorized Access"), status: 401 });
+          return reject(this.errorObject("Unauthorized Access", 401));
 
         await document.remove();
         resolve();
@@ -136,15 +146,19 @@ class JsonDocService {
     return new Promise(async (resolve, reject) => {
 
       const { user, id, _schema } = payload;
+
       try {
+
+        if (!this.helperService.isValidId(payload.id))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
 
         const document: any = await JsonDocModel.findById(id).exec();
 
         if (!document)
-          return reject({ error: new Error("File not found"), status: 404 });
+          return reject(this.errorObject("File not found", 404));
 
         if (!this.authorizedUpdate(user, document.toObject() as JsonDoc))
-          return reject({ error: new Error("Unauthorized Access"), status: 401 });
+          return reject(this.errorObject("Unauthorized Access", 401));
 
         document._schema = _schema;
 
@@ -161,7 +175,7 @@ class JsonDocService {
 
   }
 
-  public updateJsonPrivacy(payload: { id: string; user: string; privacy: string }): Promise<any> {
+  public updateJsonPrivacy(payload: { id: string; user: string; privacy: any }): Promise<any> {
 
     return new Promise(async (resolve, reject) => {
 
@@ -169,13 +183,20 @@ class JsonDocService {
 
       try {
 
+
+        if (!this.helperService.isValidId(payload.id))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
+
+        if (!(payload.privacy in privacy))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
+
         const document: any = await JsonDocModel.findById(id).exec();
 
         if (!document)
-          return reject({ error: new Error("File not found"), status: 404 });
+          return reject(this.errorObject("File not found", 404));
 
         if (!this.isAdmin(user, document.toObject() as JsonDoc))
-          return reject({ error: new Error("Unauthorized Access"), status: 401 });
+          return reject(this.errorObject("Unauthorized Access", 401));
 
         document.privacy = privacy[privacy];
 
@@ -191,7 +212,7 @@ class JsonDocService {
 
   }
 
-  public addMemberJson(payload: { userId: string; id: string; user: string; access: string }): Promise<any> {
+  public addMemberJson(payload: { userId: string; id: string; user: string; access: any }): Promise<any> {
 
     return new Promise(async (resolve, reject) => {
 
@@ -199,13 +220,22 @@ class JsonDocService {
 
       try {
 
+        if (!this.helperService.isValidId(payload.id, payload.userId))
+          return reject(this.errorObject("File not found", 404));
+
+        if (payload.userId === payload.user)
+          return reject(this.errorObject("Unauthorized Action", 401));
+
+        if (!(payload.access in access))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
+
         const document: any = await JsonDocModel.findById(id).exec();
 
         if (!document)
-          return reject({ error: new Error("File not found"), status: 404 });
+          return reject(this.errorObject("File not found", 404));
 
         if (!this.isAdmin(user, document.toObject() as JsonDoc))
-          return reject({ error: new Error("Unauthorized Access"), status: 401 });
+          return reject(this.errorObject("Unauthorized Access", 401));
 
         const idx = document.members.findIndex((member) => member.userId.toString() === userId);
 
@@ -238,21 +268,24 @@ class JsonDocService {
 
       try {
 
+        if (!this.helperService.isValidId(payload.id, payload.userId))
+          return reject(this.errorObject("File not found", 404));
+
         const document: any = await JsonDocModel.findById(id).exec();
 
         if (!document)
-          return reject({ error: new Error("File not found"), status: 404 });
+          return reject(this.errorObject("File not found", 404));
 
         if (!this.isAdmin(user, document.toObject() as JsonDoc))
-          return reject({ error: new Error("Unauthorized Access"), status: 401 });
+          return reject(this.errorObject("Unauthorized Access", 401));
 
         if (_.isEmpty(document.members))
-          return reject({ error: new Error("Can\'t remove last member'"), status: 400 });
+          return reject(this.errorObject("Can\'t remove last member'", 400));
 
         const idx = document.members.findIndex((member) => member.userId.toString() === userId);
 
         if (idx === -1)
-          return reject({ error: new Error("User not found"), status: 404 });
+          return reject(this.errorObject("User not found", 404));
 
         document.members.splice(idx, 1);
         await document.save();
@@ -267,6 +300,16 @@ class JsonDocService {
       }
 
     });
+
+  }
+
+
+  private errorObject(message: string, status: number): { error: Error; status: number } {
+
+    return {
+      error: new Error(message),
+      status
+    };
 
   }
 
