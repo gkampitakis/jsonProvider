@@ -1,14 +1,17 @@
 import { JsonDoc, access, privacy, JsonDocModel } from "./jsonDoc.model";
-import { Service } from "typedi";
-import userController from "../user/user.controller";
-import _ from 'lodash';
 import { HelperService } from "../../util/helper.service";
+import { UserService } from "../user/user.service";
+import { Service } from "typedi";
+import _ from 'lodash';
 import 'reflect-metadata';
 
 @Service()
 class JsonDocService {
 
-  constructor(private helperService: HelperService) { }
+  constructor(
+    private helperService: HelperService,
+    private userService: UserService
+  ) { }
 
   private authorizedRetrieval(userId: string, jsonDoc: JsonDoc): boolean {
 
@@ -60,13 +63,13 @@ class JsonDocService {
       try {
 
         const jsonDoc = await doc.save();
-        // await userController.addDocument(user, jsonDoc._id.toString());
-        //FIXME: not yet tested
-        //FIXME: this function is going to be moved to user service and is going to be a dependency here
+        await this.userService.addDocument(jsonDoc._id.toString(), user);
+
         resolve(jsonDoc);
 
       } catch (error) {
 
+        if (error.status) return reject(error);
         reject({ error: error });
 
       }
@@ -119,20 +122,24 @@ class JsonDocService {
         if (!document)
           return reject(this.errorObject("File not found", 404));
 
-        if (!this.isAdmin(user, document.toObject()))
+        if (!this.isAdmin(user, document))
           return reject(this.errorObject("Unauthorized Access", 401));
 
         await document.remove();
         resolve();
 
+        const userIds: string[] = [];
         document.members.forEach(member => {
-          //TODO: this will be moved to a service
-          userController.removeDocument(member.userId, id);
+
+          userIds.push(member.userId.toString());
 
         });
 
+        this.userService.removeDocument(id, ...userIds);
+
       } catch (error) {
 
+        if (error.status) return reject(error);
         reject({ error: error });
 
       }
@@ -150,6 +157,9 @@ class JsonDocService {
       try {
 
         if (!this.helperService.isValidId(payload.id))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
+
+        if (_.isEmpty(_schema))
           return reject(this.errorObject("Bad Parameters Provided", 400));
 
         const document: any = await JsonDocModel.findById(id).exec();
@@ -175,16 +185,15 @@ class JsonDocService {
 
   }
 
-  public updateJsonPrivacy(payload: { id: string; user: string; privacy: any }): Promise<any> {
+  public updateJsonPrivacy(payload: { id: string; user: string; privacy: string }): Promise<any> {
 
     return new Promise(async (resolve, reject) => {
 
-      const { user, id, privacy } = payload;
+      const { user, id } = payload;
 
       try {
 
-
-        if (!this.helperService.isValidId(payload.id))
+        if (!this.helperService.isValidId(payload.id, user))
           return reject(this.errorObject("Bad Parameters Provided", 400));
 
         if (!(payload.privacy in privacy))
@@ -195,10 +204,10 @@ class JsonDocService {
         if (!document)
           return reject(this.errorObject("File not found", 404));
 
-        if (!this.isAdmin(user, document.toObject() as JsonDoc))
+        if (!this.isAdmin(user, document))
           return reject(this.errorObject("Unauthorized Access", 401));
 
-        document.privacy = privacy[privacy];
+        document.privacy = privacy[payload.privacy];
 
         await document.save();
         resolve();
@@ -212,19 +221,19 @@ class JsonDocService {
 
   }
 
-  public addMemberJson(payload: { userId: string; id: string; user: string; access: any }): Promise<any> {
+  public addMemberJson(payload: { userId: string; id: string; user: string; access: string }): Promise<any> {
 
     return new Promise(async (resolve, reject) => {
 
-      const { userId, id, user, access } = payload;
+      const { userId, id, user } = payload;
 
       try {
 
-        if (!this.helperService.isValidId(payload.id, payload.userId))
-          return reject(this.errorObject("File not found", 404));
+        if (!this.helperService.isValidId(id, userId))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
 
-        if (payload.userId === payload.user)
-          return reject(this.errorObject("Unauthorized Action", 401));
+        if (userId === user)
+          return reject(this.errorObject("Unauthorized Access", 401));
 
         if (!(payload.access in access))
           return reject(this.errorObject("Bad Parameters Provided", 400));
@@ -234,24 +243,25 @@ class JsonDocService {
         if (!document)
           return reject(this.errorObject("File not found", 404));
 
-        if (!this.isAdmin(user, document.toObject() as JsonDoc))
+        if (!this.isAdmin(user, document))
           return reject(this.errorObject("Unauthorized Access", 401));
 
         const idx = document.members.findIndex((member) => member.userId.toString() === userId);
 
         if (idx === -1) {
 
-          document.members.push({ userId: userId, access: access[access] });
-          await userController.addDocument(userId, id);
+          document.members.push({ userId: userId, access: access[payload.access] });
+          await this.userService.addDocument(id, userId);
 
         } else
-          document.members[idx].access = access[access];
+          document.members[idx].access = access[payload.access];
 
         await document.save();
         resolve();
 
       } catch (error) {
 
+        if (error.status) return reject(error);
         reject({ error: error });
 
       }
@@ -268,15 +278,15 @@ class JsonDocService {
 
       try {
 
-        if (!this.helperService.isValidId(payload.id, payload.userId))
-          return reject(this.errorObject("File not found", 404));
+        if (!this.helperService.isValidId(id, userId))
+          return reject(this.errorObject("Bad Parameters Provided", 400));
 
         const document: any = await JsonDocModel.findById(id).exec();
 
         if (!document)
           return reject(this.errorObject("File not found", 404));
 
-        if (!this.isAdmin(user, document.toObject() as JsonDoc))
+        if (!this.isAdmin(user, document))
           return reject(this.errorObject("Unauthorized Access", 401));
 
         if (_.isEmpty(document.members))
@@ -289,12 +299,13 @@ class JsonDocService {
 
         document.members.splice(idx, 1);
         await document.save();
-        await userController.removeDocument(userId, id);
+        await this.userService.removeDocument(id, userId);
 
         resolve();
 
       } catch (error) {
 
+        if (error.status) return reject(error);
         reject({ error: error });
 
       }
