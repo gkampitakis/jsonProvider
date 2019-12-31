@@ -77,7 +77,7 @@ userSchema
       })
       .catch(err => { throw err; });
 
-  }, 'The specified email address is already in use.');
+  }, 'The specified email address is already in use');
 
 userSchema
   .path('username')

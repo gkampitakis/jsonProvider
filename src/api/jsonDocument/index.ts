@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import controller from './jsonDoc.controller';
-import { HelperService } from '../../util/helper.service';
+import { TokenController } from "../auth/token/token.controller";
 import { Container } from "typedi";
 
-const controllerDI = Container.get(controller);
-const jsonDocRouter = Router();
-const helper = new HelperService();
-//TODO: don't like this maybe change it
 
-jsonDocRouter.use(helper.prepareRequestUser);
+const controllerDI: controller = Container.get(controller);
+const tokenController: TokenController = Container.get(TokenController);
+const jsonDocRouter: Router = Router();
+
+jsonDocRouter.use(tokenController.prepareRequestUser);
 
 jsonDocRouter.get('/:id', controllerDI.retrieve);
 jsonDocRouter.delete('/:id', controllerDI.remove);

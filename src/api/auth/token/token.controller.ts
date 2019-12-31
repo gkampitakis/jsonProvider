@@ -1,8 +1,10 @@
+import { HelperService } from "../../../util/helper.service";
 import { Token as tokenModel } from './token.model';
+import { Request, Response } from 'express';
 import { Document } from "mongoose";
+import tokenParser from 'parse-bearer-token';
 import crypto from 'crypto';
-// import $ from '../../../util/helper.service';
-//BUG: fix the acyclic bug with the helper service
+
 export interface TokenModel extends Document {
   token: string;
   created: Date;
@@ -10,11 +12,13 @@ export interface TokenModel extends Document {
   userId: string;
 };
 
-class TokenController {
+export class TokenController {
+
+  constructor(private helperService: HelperService) { }
 
   public async create(userId: string) {
 
-    // if (!$.isValidId(userId)) throw new Error('Invalid id provided');//BUG: cyclic dependency
+    if (!this.helperService.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token: string = this.generateToken();
     const document: TokenModel = new tokenModel({ userId: userId, token: token }) as TokenModel;
@@ -27,7 +31,7 @@ class TokenController {
 
   public async remove(userId: string) {
 
-    // if (!$.isValidId(userId)) throw new Error('Invalid id provided');
+    if (!this.helperService.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token = await tokenModel.findOne({ userId: userId }).exec();
 
@@ -39,7 +43,7 @@ class TokenController {
 
   public async retrieve(userId: string) {
 
-    // if (!$.isValidId(userId)) throw new Error('Invalid id provided');
+    if (!this.helperService.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token = await tokenModel.findOne({ userId: userId }).lean().exec();
 
@@ -86,6 +90,20 @@ class TokenController {
 
   }
 
-}
+  public async prepareRequestUser(req: Request, res: Response, next: Function) {
 
-export const tokenController = new TokenController();
+    const token = tokenParser(req);
+
+    if (!token) return next();
+
+    try {
+
+      req.user = await this.retrieveUser(token);
+
+    } catch { }
+
+    next();
+
+  }
+
+}

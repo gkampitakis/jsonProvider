@@ -3,7 +3,7 @@ import { HelperService } from "../../util/helper.service";
 import { UserService } from "../user/user.service";
 import { Service } from "typedi";
 import _ from 'lodash';
-import 'reflect-metadata';
+import "reflect-metadata";
 
 @Service()
 class JsonDocService {

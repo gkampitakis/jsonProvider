@@ -1,18 +1,20 @@
 import { Router } from 'express';
 import controller from './user.controller';
-import { HelperService } from '../../util/helper.service';
+import { TokenController } from "../auth/token/token.controller";
+import { Container } from "typedi";
 
+const controllerDI = Container.get(controller);
+const tokenController: TokenController = Container.get(TokenController);
 const userRouter: Router = Router();
-const helper = new HelperService();
-//TODO: don like this probably needs changing 
-userRouter.use(helper.prepareRequestUser);
 
-userRouter.post('/', controller.create);
-userRouter.get('/email', controller.emailTest);
-userRouter.get('/me', controller.me);
-userRouter.get('/:id', controller.retrieve);
+userRouter.use(tokenController.prepareRequestUser);
+
+userRouter.post('/', controllerDI.create);
+// userRouter.get('/email', controllerDI.emailTest);
+userRouter.get('/me', controllerDI.me);
+userRouter.get('/:id', controllerDI.retrieve);
 //FIXME: return only visible data
-userRouter.put('/', controller.update);
-userRouter.delete('/', controller.remove);
+userRouter.put('/', controllerDI.update);
+userRouter.delete('/', controllerDI.remove);
 
 export default userRouter;

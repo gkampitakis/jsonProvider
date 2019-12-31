@@ -44,7 +44,6 @@ describe("create document", () => {
 
   });
 
-
   it("should insert a doc into collection and retrieve it", async () => {
 
     const payload = {

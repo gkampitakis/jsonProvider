@@ -1,25 +1,20 @@
 import { Request, Response } from 'express';
-import { User, UserI } from './user.model';
-import { HelperService } from '../../util/helper.service';
-import { tokenController } from "../auth/token/token.controller";
-import emailController from "../communication/email/email.controller";
 import { _Logger, Logger } from "../../util/decorators/logger";
 import autoBind from 'auto-bind';
+import { UserService } from "./user.service";
 
 class UserController {
 
   @Logger('JsonDocController')
-  private static logger: _Logger
-  private helper: HelperService;
+  private logger: _Logger
 
-  constructor() {
+  constructor(private userService: UserService) {
 
     autoBind(this);
-    this.helper = new HelperService();//TODO: this will be changed
 
   }
 
-  private static handleError(res: Response, error: Error, status = 500) {
+  private handleError(res: Response, error: Error, status = 500) {
 
     this.logger.error(error.message);
     return res.status(status).json({
@@ -31,18 +26,18 @@ class UserController {
 
   public async create(req: Request, res: Response) {
 
+    const payload = {
+      body: req.body
+    };
+
     try {
 
-      const user: UserI = new User(req.body) as UserI;
+      const result = await this.userService.createUser(payload);
+      res.status(200).json(result);
 
-      const doc = await user.save(),
-        result = doc.toObject();
+    } catch ({ error, status }) {
 
-      res.status(200).json(UserController.stripPassword(result));
-
-    } catch (error) {
-
-      UserController.handleError(res, error);
+      this.handleError(res, error, status);
 
     }
 
@@ -52,20 +47,17 @@ class UserController {
     //TODO: this needs to see only the viewable fields
     try {
 
-      if (!this.helper.isValidId(req.params.id)) return res.status(404).send({});
+      const payload = {
+        id: req.params.id
+      };
 
-      const user = await User.findById(req.params.id)
-        .populate('documents')//FIXME:
-        .lean()
-        .exec();
+      const result = await this.userService.retrieveUser(payload);
 
-      if (!user) return res.status(404).send({});
+      return res.status(200).json(result);
 
-      return res.status(200).json(UserController.stripPassword(user));
+    } catch ({ error, status }) {
 
-    } catch (error) {
-
-      UserController.handleError(res, error);
+      this.handleError(res, error, status);
 
     }
 
@@ -74,26 +66,18 @@ class UserController {
 
   public async remove(req: Request, res: Response) {
     //TODO: need to delete all the files that he only has access :O 
-    const loggedUser = req.user;
-
-    if (!loggedUser)
-      return UserController.handleError(res, new Error("Need to be registered"), 401);
+    const payload = {
+      user: req.user
+    };
 
     try {
 
-      const user: UserI = await User.findById(loggedUser).exec() as UserI;
-
-      if (!user) //NOTE: if we end up here something has gone really bad
-        return UserController.handleError(res, new Error("User not found"), 404);
-
-      await user.remove();
-
+      await this.userService.removeUser(payload);
       res.status(200).send({});
-      tokenController.invalidateTokens(user._id);
 
-    } catch (error) {
+    } catch ({ error, status }) {
 
-      UserController.handleError(res, error);
+      this.handleError(res, error, status);
 
     }
 
@@ -101,148 +85,61 @@ class UserController {
 
   public async update(req: Request, res: Response) {
 
-    const loggedUser = req.user;
-
-    if (!loggedUser)
-      return UserController.handleError(res, new Error("Need to be registered"), 401);
+    const payload = {
+      user: req.user,
+      body: req.body
+    };
 
     try {
-      const user: UserI = await User.findById(loggedUser).exec() as UserI;
 
-      if (!user)//NOTE: if we end up here something has gone really bad
-        return UserController.handleError(res, new Error("User not found"), 404);
+      const result = await this.userService.updateUser(payload);
+      return res.status(200).json(result);
 
-      user.username = req.body?.username || user.username;
-      user.email = req.body?.email || user.email;
-      user.image = req.body?.image || user.image;
-      user.password = req.body?.password || user.password;
+    } catch ({ error, status }) {
 
-      await user.save();
-
-      return res.status(200).json(UserController.stripPassword(user.toObject()));
-
-    } catch (error) {
-
-      UserController.handleError(res, error);
+      this.handleError(res, error, status);
 
     }
 
   }
 
 
-  public async emailTest(req: Request, res: Response) {
+  // public async emailTest(req: Request, res: Response) {
+  //   //TODO: this will be removed
+  //   try {
 
-    try {
+  //     const test = await emailController.send('gkabitakis@gmail.com', 'test',
+  //       { password: 'test', fname: 'myname', lname: 'test2' }, 'changePassword');
 
-      const test = await emailController.send('gkabitakis@gmail.com', 'test',
-        { password: 'test', fname: 'myname', lname: 'test2' }, 'changePassword');
+  //     res.status(200).json(test);
 
-      res.status(200).json(test);
+  //   } catch ({ error, status }) {
 
-    } catch (error) {
+  //     this.handleError(res, error, status);
 
-      UserController.handleError(res, error);
+  //   }
 
-    }
-
-  }
+  // }
 
   public async me(req: Request, res: Response) {
 
-    const loggedUser = req.user;
-
-    if (!loggedUser)
-      return UserController.handleError(res, new Error("Need to be registered"), 401);
+    const payload = {
+      user: req.user
+    };
 
     try {
 
-      const user = await User.findById(loggedUser)
-        .populate('documents', '-_id -__v')
-        .lean()
-        .exec();
+      const result = await this.userService.retrieveMe(payload);
+      return res.status(200).json(result);
 
-      if (!user)//NOTE: if we end up here something has gone really bad
-        return UserController.handleError(res, new Error("User not found"), 404);
+    } catch ({ error, status }) {
 
-      return res.status(200).json(UserController.stripPassword(user));
-
-    } catch (error) {
-
-      UserController.handleError(res, error);
+      this.handleError(res, error, status);
 
     }
-
-  }
-
-  private static stripPassword(user: UserI): Partial<UserI> {
-
-    delete user.password;
-    delete user.salt;
-
-    return user;
-
-  }
-
-  public addDocument(id: string, documentId: string): Promise<Error> {
-
-    return new Promise(async (resolve, reject) => {
-
-      try {
-
-        const user: UserI = await User.findById(id).exec() as UserI;
-
-        if (!user) return reject(new Error('User not found'));
-
-        const idx = user.documents.findIndex((document: any) => document === documentId);
-
-        if (idx !== -1) return resolve();
-
-        user.documents.push(documentId);
-
-        await user.save();
-
-        resolve();
-
-      } catch (error) {
-
-        reject(error);
-
-      }
-
-    });
-
-  }
-
-  public removeDocument(id: string, documentId: string): Promise<Error> {
-
-    return new Promise(async (resolve, reject) => {
-
-      try {
-
-        const user: UserI = await User.findById(id).exec() as UserI;
-
-        if (!user) return reject(new Error('User not found'));
-
-        const idx = user.documents.findIndex((document: any) => document.toString() === documentId);
-
-        if (idx === -1) return resolve();
-
-        user.documents.splice(idx, 1);
-
-        await user.save();
-
-        resolve();
-
-      } catch (error) {
-
-        reject(error);
-
-      }
-
-    });
 
   }
 
 }
 
-export default new UserController();
+export default UserController;

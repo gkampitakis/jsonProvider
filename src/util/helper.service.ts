@@ -1,27 +1,11 @@
 import { Request, Response } from 'express';
-import tokenParser from 'parse-bearer-token';
-import { tokenController } from '../api/auth/token/token.controller';
 import { ObjectID } from 'mongodb';
 import version from '../version.json';
 import { _Logger } from "./decorators/logger";
-
+import { Service } from "typedi";
+import "reflect-metadata";
+@Service()
 export class HelperService {
-
-  public async prepareRequestUser(req: Request, res: Response, next: Function) {
-
-    const token = tokenParser(req);
-
-    if (!token) return next();
-
-    try {
-
-      req.user = await tokenController.retrieveUser(token);
-
-    } catch { }
-
-    next();
-
-  }
 
   public isValidId(...ids): boolean {
 
