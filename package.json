@@ -4,7 +4,7 @@
   "description": "Simple Server for storing and serving json files",
   "main": "index.js",
   "scripts": {
-    "test": "rimraf dist coverage && npm run eslint && jest -i",
+    "test": "rimraf dist coverage && npm run eslint && jest",
     "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts",
     "prod": "tsc && NODE_ENV=production node ./build/index.js",
     "start": "NODE_ENV=production node ./build/index.js",

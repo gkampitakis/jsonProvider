@@ -2,30 +2,29 @@ import Container from "typedi";
 import JsonDocService from "./jsonDoc.service";
 import mongoose from "mongoose";
 import { JsonDoc } from "./jsonDoc.model";
-// import SpyInstance = jest.SpyInstance;
-import { UserService as FakeService } from "../../../__mocks__/userService";
+import { UserService as FakeService } from "./__mocks__/userService";
 import { UserService } from "../user/user.service";
-jest.mock('userService');
 
-Container.set(UserService, new FakeService());
+const fakeService = new FakeService();
+Container.set(UserService, fakeService);
 const jsonService: JsonDocService = Container.get(JsonDocService);
 
-let connection, docId: string;
+let connection,
+  docId: string,
+  addDocumentSpy: jest.SpyInstance,
+  removeDocumentSpy: jest.SpyInstance;
+
 const user = "5e0a02aed716316c24be80b5",
   unauthorizedUser = "5e0a02aed716316c24be80b4";
-// UserServiceMock = jest.requireMock("userService").UserService,
-// addDocumentSpy: SpyInstance = jest.spyOn(UserServiceMock, "addDocument"),
-// removeDocumentSpy: SpyInstance = jest.spyOn(UserServiceMock, "removeDocument");
 
+beforeEach(() => {
+
+  addDocumentSpy.mockReset();
+  removeDocumentSpy.mockReset();
+
+});
 
 describe("create document", () => {
-
-  // beforeEach(() => {
-
-  //   addDocumentSpy.mockClear();
-  //   removeDocumentSpy.mockClear();
-
-  // });
 
   beforeAll(async () => {
 
@@ -35,6 +34,9 @@ describe("create document", () => {
       useUnifiedTopology: true,
       useCreateIndex: true
     });
+
+    addDocumentSpy = jest.spyOn(fakeService, "addDocument");
+    removeDocumentSpy = jest.spyOn(fakeService, "removeDocument");
 
   });
 
@@ -55,14 +57,13 @@ describe("create document", () => {
         }
       }
     };
-
     const result: JsonDoc = await jsonService.createJson(payload);
     const insertedDoc: JsonDoc = await jsonService.retrieveJson({ user: user, id: result._id });
-    console.log(insertedDoc);
 
     expect(insertedDoc._schema).toEqual(payload.body._schema);
     expect(insertedDoc.privacy).toEqual(payload.body.privacy);
     expect(insertedDoc.members[0].userId.toString()).toEqual(user);
+    expect(addDocumentSpy).toBeCalledTimes(1);
 
   });
 
@@ -86,6 +87,7 @@ describe("create document", () => {
 
       expect(status).toEqual(401);
       expect(error.message).toEqual("Need to be registered");
+      expect(addDocumentSpy).toBeCalledTimes(0);
 
     }
   });
@@ -419,6 +421,7 @@ describe("addMemberJson", () => {
 
       expect(status).toEqual(400);
       expect(error.message).toEqual("Bad Parameters Provided");
+      expect(addDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -441,6 +444,7 @@ describe("addMemberJson", () => {
 
       expect(status).toEqual(400);
       expect(error.message).toEqual("Bad Parameters Provided");
+      expect(addDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -464,6 +468,7 @@ describe("addMemberJson", () => {
 
       expect(status).toEqual(404);
       expect(error.message).toEqual("File not found");
+      expect(addDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -486,6 +491,7 @@ describe("addMemberJson", () => {
 
       expect(status).toEqual(401);
       expect(error.message).toEqual("Unauthorized Access");
+      expect(addDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -502,6 +508,7 @@ describe("addMemberJson", () => {
 
     const result = await jsonService.addMemberJson(payload);
     expect(result).toBe(undefined);
+    expect(addDocumentSpy).toBeCalledTimes(1);
 
   });
 
@@ -526,6 +533,7 @@ describe("removeMemberJson", () => {
 
       expect(status).toEqual(400);
       expect(error.message).toEqual("Bad Parameters Provided");
+      expect(removeDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -548,6 +556,7 @@ describe("removeMemberJson", () => {
 
       expect(status).toEqual(404);
       expect(error.message).toEqual("File not found");
+      expect(removeDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -569,6 +578,7 @@ describe("removeMemberJson", () => {
 
       expect(status).toEqual(401);
       expect(error.message).toEqual("Unauthorized Access");
+      expect(removeDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -584,6 +594,7 @@ describe("removeMemberJson", () => {
 
     const result = await jsonService.removeMemberJson(payload);
     expect(result).toBe(undefined);
+    expect(removeDocumentSpy).toBeCalledTimes(1);
 
   });
 
@@ -606,6 +617,7 @@ describe("RemoveJson", () => {
 
       expect(status).toEqual(400);
       expect(error.message).toEqual("Bad Parameters Provided");
+      expect(removeDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -627,6 +639,7 @@ describe("RemoveJson", () => {
 
       expect(status).toEqual(404);
       expect(error.message).toEqual("File not found");
+      expect(removeDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -647,6 +660,7 @@ describe("RemoveJson", () => {
 
       expect(status).toEqual(401);
       expect(error.message).toEqual("Unauthorized Access");
+      expect(removeDocumentSpy).toBeCalledTimes(0);
 
     }
 
@@ -661,6 +675,7 @@ describe("RemoveJson", () => {
 
     const result = await jsonService.removeJson(payload);
     expect(result).toBe(undefined);
+    expect(removeDocumentSpy).toBeCalledTimes(1);
 
   });
 
