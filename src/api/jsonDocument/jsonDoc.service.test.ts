@@ -1,15 +1,31 @@
 import Container from "typedi";
 import JsonDocService from "./jsonDoc.service";
 import mongoose from "mongoose";
-import { UserService } from "../user/user.service";
-import { UserI } from "../user/user.model";
 import { JsonDoc } from "./jsonDoc.model";
+// import SpyInstance = jest.SpyInstance;
+import { UserService as FakeService } from "../../../__mocks__/userService";
+import { UserService } from "../user/user.service";
+jest.mock('userService');
 
+Container.set(UserService, new FakeService());
 const jsonService: JsonDocService = Container.get(JsonDocService);
-const userService: UserService = Container.get(UserService);
-let connection, user: UserI, docId: string, unauthorizedUser: UserI;
+
+let connection, docId: string;
+const user = "5e0a02aed716316c24be80b5",
+  unauthorizedUser = "5e0a02aed716316c24be80b4";
+// UserServiceMock = jest.requireMock("userService").UserService,
+// addDocumentSpy: SpyInstance = jest.spyOn(UserServiceMock, "addDocument"),
+// removeDocumentSpy: SpyInstance = jest.spyOn(UserServiceMock, "removeDocument");
+
 
 describe("create document", () => {
+
+  // beforeEach(() => {
+
+  //   addDocumentSpy.mockClear();
+  //   removeDocumentSpy.mockClear();
+
+  // });
 
   beforeAll(async () => {
 
@@ -19,22 +35,6 @@ describe("create document", () => {
       useUnifiedTopology: true,
       useCreateIndex: true
     });
-
-    user = await userService.createUser({
-      body: {
-        username: "Giorgos Kampitakis",
-        email: "gkabitakis@gmail.com",
-        password: "12345"
-      }
-    }) as UserI;
-
-    unauthorizedUser = await userService.createUser({
-      body: {
-        username: "unauthorizedUser",
-        email: "unauthorizedUser@gmail.com",
-        password: "12345"
-      }
-    }) as UserI;
 
   });
 
@@ -47,7 +47,7 @@ describe("create document", () => {
   it("should insert a doc into collection and retrieve it", async () => {
 
     const payload = {
-      user: user._id,
+      user: user,
       body: {
         privacy: 1,
         _schema: {
@@ -57,11 +57,12 @@ describe("create document", () => {
     };
 
     const result: JsonDoc = await jsonService.createJson(payload);
-    const insertedDoc: JsonDoc = await jsonService.retrieveJson({ user: user._id, id: result._id });
+    const insertedDoc: JsonDoc = await jsonService.retrieveJson({ user: user, id: result._id });
+    console.log(insertedDoc);
 
     expect(insertedDoc._schema).toEqual(payload.body._schema);
     expect(insertedDoc.privacy).toEqual(payload.body.privacy);
-    expect(insertedDoc.members[0].userId).toEqual(user._id);
+    expect(insertedDoc.members[0].userId.toString()).toEqual(user);
 
   });
 
@@ -96,7 +97,7 @@ describe("retrieveJson", () => {
   beforeAll(async () => {
 
     const payload = {
-      user: user._id,
+      user: user,
       body: {
         privacy: 1,
         _schema: {
@@ -113,7 +114,7 @@ describe("retrieveJson", () => {
   it("should return file not found", async () => {
 
     const payload = {
-      user: user._id,
+      user: user,
       id: "5df415fdbc982579da9786f1"
     };
 
@@ -137,7 +138,7 @@ describe("retrieveJson", () => {
 
       const payload = {
         id: docId,
-        user: unauthorizedUser._id.toString()
+        user: unauthorizedUser.toString()
       };
 
       await jsonService.retrieveJson(payload);
@@ -157,7 +158,7 @@ describe("retrieveJson", () => {
 
       const payload = {
         id: "12312312",
-        user: user._id
+        user: user
       };
 
       await jsonService.retrieveJson(payload);
@@ -175,14 +176,14 @@ describe("retrieveJson", () => {
 
     const payload = {
       id: docId,
-      user: user._id
+      user: user
     };
 
     const result: JsonDoc = await jsonService.retrieveJson(payload);
 
     expect(result._schema).toEqual({ test: "hello World" });
     expect(result.privacy).toEqual(1);
-    expect(result.members[0].userId).toEqual(user._id);
+    expect(result.members[0].userId.toString()).toEqual(user);
 
   });
 
@@ -217,7 +218,7 @@ describe("UpdateJson", () => {
     try {
 
       const payload = {
-        user: user._id,
+        user: user,
         _schema: {},
         id: "5df415fdbc982579da9786f1"
       };
@@ -236,7 +237,7 @@ describe("UpdateJson", () => {
   it("File not Found", async () => {
 
     const payload = {
-      user: user._id,
+      user: user,
       _schema: {
         test: "te"
       },
@@ -262,7 +263,7 @@ describe("UpdateJson", () => {
     try {
 
       const payload = {
-        user: unauthorizedUser._id.toString(),
+        user: unauthorizedUser.toString(),
         _schema: {
           test: "te"
         },
@@ -283,7 +284,7 @@ describe("UpdateJson", () => {
   it("should update the json", async () => {
 
     const payload = {
-      user: user._id.toString(),
+      user: user.toString(),
       id: docId,
       _schema: {
         updatedField: "Hello World"
@@ -325,7 +326,7 @@ describe("updateJsonPrivacy", () => {
     try {
 
       const payload = {
-        user: user._id,
+        user: user,
         privacy: "test",
         id: "5df415fdbc982579da9786f1"
       };
@@ -344,7 +345,7 @@ describe("updateJsonPrivacy", () => {
   it("File not Found", async () => {
 
     const payload = {
-      user: user._id,
+      user: user,
       privacy: "public",
       id: "5df415fdbc982579da9786f1"
     };
@@ -368,7 +369,7 @@ describe("updateJsonPrivacy", () => {
     try {
 
       const payload = {
-        user: unauthorizedUser._id.toString(),
+        user: unauthorizedUser.toString(),
         privacy: "public",
         id: docId
       };
@@ -387,7 +388,7 @@ describe("updateJsonPrivacy", () => {
   it("should update the json", async () => {
 
     const payload = {
-      user: user._id.toString(),
+      user: user.toString(),
       privacy: "public",
       id: docId
     };
@@ -406,7 +407,7 @@ describe("addMemberJson", () => {
     try {
 
       const payload = {
-        user: user._id,
+        user: user,
         userId: "123123",
         access: "write",
         id: docId
@@ -428,8 +429,8 @@ describe("addMemberJson", () => {
     try {
 
       const payload = {
-        user: user._id,
-        userId: unauthorizedUser._id.toString(),
+        user: user,
+        userId: unauthorizedUser.toString(),
         access: "test",
         id: docId
       };
@@ -448,8 +449,8 @@ describe("addMemberJson", () => {
   it("File not Found", async () => {
 
     const payload = {
-      user: user._id,
-      userId: unauthorizedUser._id.toString(),
+      user: user,
+      userId: unauthorizedUser.toString(),
       access: "write",
       id: "5df415fdbc982579da9786f1"
     };
@@ -473,8 +474,8 @@ describe("addMemberJson", () => {
     try {
 
       const payload = {
-        user: unauthorizedUser._id.toString(),
-        userId: unauthorizedUser._id.toString(),
+        user: unauthorizedUser.toString(),
+        userId: unauthorizedUser.toString(),
         access: "write",
         id: docId
       };
@@ -493,8 +494,8 @@ describe("addMemberJson", () => {
   it("should update the json", async () => {
 
     const payload = {
-      user: user._id.toString(),
-      userId: unauthorizedUser._id.toString(),
+      user: user.toString(),
+      userId: unauthorizedUser.toString(),
       access: "write",
       id: docId
     };
@@ -514,7 +515,7 @@ describe("removeMemberJson", () => {
     try {
 
       const payload = {
-        user: user._id,
+        user: user,
         userId: "123123",
         id: docId
       };
@@ -533,8 +534,8 @@ describe("removeMemberJson", () => {
   it("File not Found", async () => {
 
     const payload = {
-      user: user._id,
-      userId: unauthorizedUser._id.toString(),
+      user: user,
+      userId: unauthorizedUser.toString(),
       id: "5df415fdbc982579da9786f1"
     };
 
@@ -557,8 +558,8 @@ describe("removeMemberJson", () => {
     try {
 
       const payload = {
-        user: unauthorizedUser._id.toString(),
-        userId: unauthorizedUser._id.toString(),
+        user: unauthorizedUser.toString(),
+        userId: unauthorizedUser.toString(),
         id: docId
       };
 
@@ -576,8 +577,8 @@ describe("removeMemberJson", () => {
   it("should update the json", async () => {
 
     const payload = {
-      user: user._id.toString(),
-      userId: unauthorizedUser._id.toString(),
+      user: user.toString(),
+      userId: unauthorizedUser.toString(),
       id: docId
     };
 
@@ -596,7 +597,7 @@ describe("RemoveJson", () => {
 
       const payload = {
         id: "12312312",
-        user: user._id
+        user: user
       };
 
       await jsonService.removeJson(payload);
@@ -613,7 +614,7 @@ describe("RemoveJson", () => {
   it("File not Found", async () => {
 
     const payload = {
-      user: user._id,
+      user: user,
       id: "5df415fdbc982579da9786f1"
     };
 
@@ -637,7 +638,7 @@ describe("RemoveJson", () => {
 
       const payload = {
         id: docId,
-        user: unauthorizedUser._id.toString()
+        user: unauthorizedUser.toString()
       };
 
       await jsonService.removeJson(payload);
@@ -655,7 +656,7 @@ describe("RemoveJson", () => {
 
     const payload = {
       id: docId,
-      user: user._id.toString()
+      user: user.toString()
     };
 
     const result = await jsonService.removeJson(payload);

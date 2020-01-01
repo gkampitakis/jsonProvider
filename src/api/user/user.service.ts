@@ -81,7 +81,7 @@ export class UserService {
 
         await doc.remove();
         resolve();
-
+        
         this.tokenController.invalidateTokens(doc._id);
 
       } catch (error) {
