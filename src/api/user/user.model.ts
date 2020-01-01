@@ -1,6 +1,7 @@
 import { Schema, model, Document } from 'mongoose';
 import validator from 'validator';
 import crypto from 'crypto';
+import { JsonDocModel } from "../jsonDocument/jsonDoc.model";
 
 export interface UserI extends Document {
   _id: string;
@@ -46,7 +47,7 @@ const userSchema = new Schema({
     default: Date.now()
   },
   documents: {
-    type: [{ type: Schema.Types.ObjectId, ref: 'JsonDoc' }],
+    type: [{ type: Schema.Types.ObjectId, ref: JsonDocModel }],
     default: []
   }
 });

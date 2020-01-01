@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 import { _Logger, Logger } from "../../util/decorators/logger";
 import autoBind from 'auto-bind';
 import { UserService } from "./user.service";
+import { Service } from "typedi";
 
+@Service()
 class UserController {
 
   @Logger('JsonDocController')
@@ -57,7 +59,7 @@ class UserController {
 
     } catch ({ error, status }) {
 
-      this.handleError(res, error, status);
+      this.handleError(res, error);
 
     }
 

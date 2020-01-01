@@ -4,6 +4,8 @@ import { Request, Response } from 'express';
 import { Document } from "mongoose";
 import tokenParser from 'parse-bearer-token';
 import crypto from 'crypto';
+import { Service } from "typedi";
+import autoBind from "auto-bind";
 
 export interface TokenModel extends Document {
   token: string;
@@ -12,9 +14,14 @@ export interface TokenModel extends Document {
   userId: string;
 };
 
+@Service()
 export class TokenController {
 
-  constructor(private helperService: HelperService) { }
+  constructor(private helperService: HelperService) {
+
+    autoBind(this);
+
+  }
 
   public async create(userId: string) {
 

@@ -81,7 +81,7 @@ export class UserService {
 
         await doc.remove();
         resolve();
-        
+
         this.tokenController.invalidateTokens(doc._id);
 
       } catch (error) {
@@ -164,6 +164,7 @@ export class UserService {
     const promises: Promise<any>[] = [];
 
     for (let i = 0; i < id.length; i++) {
+
       const promise = new Promise(async (resolve, reject) => {
 
         try {
@@ -173,7 +174,7 @@ export class UserService {
           if (!user)
             return reject(this.errorObject("User not found", 404));
 
-          const idx = user.documents.findIndex((document: any) => document === documentId);
+          const idx = user.documents.findIndex((document: any) => document.toString() === documentId);
 
           if (idx !== -1) return resolve();
 
