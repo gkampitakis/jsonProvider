@@ -4,9 +4,10 @@ import { Service } from 'typedi';
 import JsonDocService from "./jsonDoc.service";
 import autoBind from 'auto-bind';
 import _ from 'lodash';
+import { ControllerModule } from "../interfaces/ControllerModule";
 
 @Service()
-class JsonDocController {
+class JsonDocController extends ControllerModule {
 
   @Logger('JsonDocController')
   private logger: _Logger;
@@ -15,17 +16,8 @@ class JsonDocController {
     private jsonService: JsonDocService
   ) {
 
+    super();
     autoBind(this);
-
-  }
-
-  private handleError(res: Response, error: Error, status = 500) {
-
-    this.logger.error(error.message);
-    return res.status(status).json({
-      message: error.message,
-      status: status
-    });
 
   }
 
@@ -43,6 +35,7 @@ class JsonDocController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       this.handleError(res, error, status);
 
     }
@@ -63,6 +56,8 @@ class JsonDocController {
 
     } catch ({ error, status }) {
 
+
+      this.logger.error(error.message);
       this.handleError(res, error, status);
 
     }
@@ -107,6 +102,7 @@ class JsonDocController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       return this.handleError(res, error, status);
 
     }
@@ -128,6 +124,7 @@ class JsonDocController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       return this.handleError(res, error, status);
 
     }
@@ -150,6 +147,7 @@ class JsonDocController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       return this.handleError(res, error, status);
 
     }
@@ -171,6 +169,7 @@ class JsonDocController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       return this.handleError(res, error, status);
 
     }

@@ -4,7 +4,7 @@ import { TokenController } from "../auth/token/token.controller";
 import { Container } from "typedi";
 
 const controllerDI = Container.get(controller);
-const tokenController: TokenController = Container.get(TokenController);
+const tokenController: TokenController = new TokenController();
 const userRouter: Router = Router();
 
 userRouter.use(tokenController.prepareRequestUser);

@@ -5,7 +5,7 @@ import { Container } from "typedi";
 
 
 const controllerDI: controller = Container.get(controller);
-const tokenController: TokenController = Container.get(TokenController);
+const tokenController: TokenController = new TokenController();
 const jsonDocRouter: Router = Router();
 
 jsonDocRouter.use(tokenController.prepareRequestUser);

@@ -1,11 +1,11 @@
-import { HelperService } from "../../../util/helper.service";
 import { Token as tokenModel } from './token.model';
 import { Request, Response } from 'express';
 import { Document } from "mongoose";
 import tokenParser from 'parse-bearer-token';
 import crypto from 'crypto';
-import { Service } from "typedi";
 import autoBind from "auto-bind";
+import { ServiceModule } from "../../interfaces/ServiceModule";
+import { Service } from "typedi";
 
 export interface TokenModel extends Document {
   token: string;
@@ -15,9 +15,11 @@ export interface TokenModel extends Document {
 };
 
 @Service()
-export class TokenController {
+export class TokenController extends ServiceModule {
 
-  constructor(private helperService: HelperService) {
+  constructor() {
+
+    super();
 
     autoBind(this);
 
@@ -25,7 +27,7 @@ export class TokenController {
 
   public async create(userId: string) {
 
-    if (!this.helperService.isValidId(userId)) throw new Error('Invalid id provided');
+    if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token: string = this.generateToken();
     const document: TokenModel = new tokenModel({ userId: userId, token: token }) as TokenModel;
@@ -38,7 +40,7 @@ export class TokenController {
 
   public async remove(userId: string) {
 
-    if (!this.helperService.isValidId(userId)) throw new Error('Invalid id provided');
+    if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token = await tokenModel.findOne({ userId: userId }).exec();
 
@@ -50,7 +52,7 @@ export class TokenController {
 
   public async retrieve(userId: string) {
 
-    if (!this.helperService.isValidId(userId)) throw new Error('Invalid id provided');
+    if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token = await tokenModel.findOne({ userId: userId }).lean().exec();
 

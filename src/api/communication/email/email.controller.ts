@@ -4,7 +4,7 @@ import hbs from 'nodemailer-express-handlebars';
 import validator from 'validator';
 import path from 'path';
 import { Configurator } from '../../../util/decorators/configurator';
-
+//TODO: this needs clearing testing and error handling
 class EmailController {
 
   @Configurator("keys.sendgrid",

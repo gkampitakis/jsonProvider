@@ -3,26 +3,18 @@ import { _Logger, Logger } from "../../util/decorators/logger";
 import autoBind from 'auto-bind';
 import { UserService } from "./user.service";
 import { Service } from "typedi";
+import { ControllerModule } from "../interfaces/ControllerModule";
 
 @Service()
-class UserController {
+class UserController extends ControllerModule {
 
-  @Logger('JsonDocController')
+  @Logger('UserController')
   private logger: _Logger
 
   constructor(private userService: UserService) {
 
+    super();
     autoBind(this);
-
-  }
-
-  private handleError(res: Response, error: Error, status = 500) {
-
-    this.logger.error(error.message);
-    return res.status(status).json({
-      message: error.message,
-      status: status
-    });
 
   }
 
@@ -39,6 +31,7 @@ class UserController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       this.handleError(res, error, status);
 
     }
@@ -79,6 +72,7 @@ class UserController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       this.handleError(res, error, status);
 
     }
@@ -99,6 +93,7 @@ class UserController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       this.handleError(res, error, status);
 
     }
@@ -117,6 +112,7 @@ class UserController {
 
   //   } catch ({ error, status }) {
 
+  // this.logger.error(error.message);
   //     this.handleError(res, error, status);
 
   //   }
@@ -136,6 +132,7 @@ class UserController {
 
     } catch ({ error, status }) {
 
+      this.logger.error(error.message);
       this.handleError(res, error, status);
 
     }

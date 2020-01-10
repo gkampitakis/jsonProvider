@@ -1,15 +1,17 @@
-import { HelperService } from "../../util/helper.service";
 import { UserI, User } from "./user.model";
 import { TokenController } from "../auth/token/token.controller";
 import { Service } from "typedi";
+import { ServiceModule } from "../interfaces/ServiceModule";
+import 'reflect-metadata';
 
 @Service()
-export class UserService {
+export class UserService extends ServiceModule {
 
   constructor(
-    private helperService: HelperService,
     private tokenController: TokenController
-  ) { }
+  ) {
+    super();
+  }
 
   public createUser(payload: { body: any }): Promise<any> {
 
@@ -38,7 +40,7 @@ export class UserService {
 
       const { id } = payload;
 
-      if (!this.helperService.isValidId(id))
+      if (!this.isValidId(id))
         return reject(this.errorObject("User not found", 404));
 
       try {
@@ -80,9 +82,10 @@ export class UserService {
           return reject(this.errorObject("User not found", 404));
 
         await doc.remove();
-        resolve();
 
         this.tokenController.invalidateTokens(doc._id);
+
+        resolve();
 
       } catch (error) {
 
@@ -239,16 +242,6 @@ export class UserService {
     }
 
     return Promise.all(promises);
-
-  }
-
-
-  private errorObject(message: string, status: number): { error: Error; status: number } {
-
-    return {
-      error: new Error(message),
-      status
-    };
 
   }
 

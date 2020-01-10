@@ -1,17 +1,22 @@
 import { JsonDoc, access, privacy, JsonDocModel } from "./jsonDoc.model";
-import { HelperService } from "../../util/helper.service";
 import { UserService } from "../user/user.service";
 import { Service } from "typedi";
 import _ from 'lodash';
 import "reflect-metadata";
+import { ServiceModule } from "../interfaces/ServiceModule";
+import autoBind from "auto-bind";
 
 @Service()
-class JsonDocService {
+class JsonDocService extends ServiceModule {
 
   constructor(
-    private helperService: HelperService,
     private userService: UserService
-  ) { }
+  ) {
+
+    super();
+    autoBind(this);
+
+  }
 
   private authorizedRetrieval(userId: string, jsonDoc: JsonDoc): boolean {
 
@@ -85,7 +90,7 @@ class JsonDocService {
 
       try {
 
-        if (!this.helperService.isValidId(payload.id))
+        if (!this.isValidId(payload.id))
           return reject(this.errorObject("Bad Parameters Provided", 400));
 
         const document = await JsonDocModel.findById(id).lean().exec();
@@ -115,7 +120,7 @@ class JsonDocService {
 
       try {
 
-        if (!this.helperService.isValidId(payload.id))
+        if (!this.isValidId(payload.id))
           return reject(this.errorObject("Bad Parameters Provided", 400));
 
         const document: any = await JsonDocModel.findById(id).exec();
@@ -156,7 +161,7 @@ class JsonDocService {
 
       try {
 
-        if (!this.helperService.isValidId(payload.id))
+        if (!this.isValidId(payload.id))
           return reject(this.errorObject("Bad Parameters Provided", 400));
 
         if (_.isEmpty(_schema))
@@ -193,7 +198,7 @@ class JsonDocService {
 
       try {
 
-        if (!this.helperService.isValidId(payload.id, user))
+        if (!this.isValidId(payload.id, user))
           return reject(this.errorObject("Bad Parameters Provided", 400));
 
         if (!(payload.privacy in privacy))
@@ -229,7 +234,7 @@ class JsonDocService {
 
       try {
 
-        if (!this.helperService.isValidId(id, userId))
+        if (!this.isValidId(id, userId))
           return reject(this.errorObject("Bad Parameters Provided", 400));
 
         if (userId === user)
@@ -278,7 +283,7 @@ class JsonDocService {
 
       try {
 
-        if (!this.helperService.isValidId(id, userId))
+        if (!this.isValidId(id, userId))
           return reject(this.errorObject("Bad Parameters Provided", 400));
 
         const document: any = await JsonDocModel.findById(id).exec();
@@ -311,16 +316,6 @@ class JsonDocService {
       }
 
     });
-
-  }
-
-
-  private errorObject(message: string, status: number): { error: Error; status: number } {
-
-    return {
-      error: new Error(message),
-      status
-    };
 
   }
 
