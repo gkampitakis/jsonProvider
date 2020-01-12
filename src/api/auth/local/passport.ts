@@ -8,7 +8,7 @@ function localAuthenticate(User: Model<Document>, email: string, password: strin
   User.findOne({ email: email }).exec()
     .then((user: UserI) => {
 
-      if (!user) return done(null, false, { message: "Could not find user" });
+      if (!user) return done(null, false, { message: "Incorrect Username or Password" });
       // if (!user.verified) //NOTE: not yet implemented
       //   return done(null, false, {
       //     message: "Email not yet verified"
@@ -17,7 +17,7 @@ function localAuthenticate(User: Model<Document>, email: string, password: strin
       user.authenticate(password, (authError, authenticated) => {
 
         if (authError) return done(authError);
-        if (!authenticated) return done(null, false, { message: "This password is not correct." });
+        if (!authenticated) return done(null, false, { message: "Incorrect Username or Password" });
 
         return done(null, user);
 
