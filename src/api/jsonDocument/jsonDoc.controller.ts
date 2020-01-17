@@ -155,7 +155,7 @@ class JsonDocController extends ControllerModule {
   }
 
   public async removeMember(req: Request, res: Response) {
-    //TODO: what happens if you remove the last member
+
     const payload = {
       userId: req.params.userId,
       id: req.params.id,

@@ -335,8 +335,7 @@ describe("Update User", () => {
     }
 
   });
-  //FIXME: write test about validations being used on update
-
+  
   it("Should update user", async () => {
 
     const payload = {

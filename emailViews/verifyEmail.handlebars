@@ -8,21 +8,39 @@
   <title>Verify Email</title>
 </head>
 
-<body style="text-align:center;background-color: #3880ff;color:white;">
-  <h1 style="margin:0px auto;">Welcome to taskmanager</h1>
-  <div style="font-size:18px;">
-    Your verification code is
-    <div
-      style="width:150px;height:50px;background-color:#cecece;color:black;margin:12px auto;border-width:3px;border-style:solid;border-color:#7c7c7c">
-      <span style="vertical-align:mid;line-height:2.75">{{code}}</span></div>
-    <span style="color:white;font-size:16px;">Insert this code to the form to verify your email and start using your
-      account</span>
-  </div>
-  <div>
-    <h2 style="color:white">Thank you <b>{{fname}}</b>&nbsp;<b>{{lname}}</b>.</h2>
-    <div style="text-align: left;color:white">
-      Created by: G.Kabitakis
+<body style="text-align:center;background-color: #eff1f3;color:#282828;">
+  <img
+    src="https://lh3.googleusercontent.com/QOkua_NBn5IOZCmRegafH2mPx595HNpWuXZVQUV0IngGzV5Lcpy6o-osbGJ9RbVCQ23YtDO-y3PtvdL5UUdY3b8_XN2rT8DtxB1UrfShdHVeZAQpe6Mkv1Xwte0GnOrbDfFvA6WkDw=w2400"
+    style="width:25%;max-width:250px">
+  <h1 style="margin:0px auto;">Welcome to JsonProvider</h1>
+  <div style="margin-top:2%; font-size:18px">
+    <div>
+      <span>Please visit</span>
     </div>
+    <div style="margin: 15px;">
+      <a href="http://localhost:5000/user/verify?t={{token}}" style="
+    color: #282828;
+    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+    text-decoration: none;
+    color: initial;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width:50%;
+    background-color:#282828;
+    color:white
+
+">
+        JsonProvider</a>
+    </div>
+    <div>
+      <span>to verify your account.</span>
+    </div>
+  </div>
+  <div style="text-align: left;position:relative;bottom:-20px">
+    Created by: gkampitakis
+  </div>
   </div>
 </body>
 

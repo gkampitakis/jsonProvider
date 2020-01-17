@@ -9,10 +9,10 @@ function localAuthenticate(User: Model<Document>, email: string, password: strin
     .then((user: UserI) => {
 
       if (!user) return done(null, false, { message: "Incorrect Username or Password" });
-      // if (!user.verified) //NOTE: not yet implemented
-      //   return done(null, false, {
-      //     message: "Email not yet verified"
-      //   });
+      if (!user.verified)
+        return done(null, false, {
+          message: "Unverified Email"
+        });
 
       user.authenticate(password, (authError, authenticated) => {
 

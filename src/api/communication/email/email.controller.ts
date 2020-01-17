@@ -4,8 +4,10 @@ import hbs from 'nodemailer-express-handlebars';
 import validator from 'validator';
 import path from 'path';
 import { Configurator } from '../../../util/decorators/configurator';
+import { Service } from "typedi";
 //TODO: this needs clearing testing and error handling
-class EmailController {
+@Service()
+export class EmailController {
 
   @Configurator("keys.sendgrid",
     "communication.email.supportedTemplates")
@@ -52,5 +54,3 @@ class EmailController {
 
   }
 }
-
-export default new EmailController();

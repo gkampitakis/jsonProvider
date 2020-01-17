@@ -36,7 +36,7 @@ const userSchema = new Schema({
   },
   verified: {
     type: Boolean,
-    default: true
+    default: false
   },
   image: {
     type: String,
@@ -117,7 +117,7 @@ userSchema.pre<UserI>('save', function (next) {
 
   }
 
-  if (!validatePresenceOf(this.password)) {//TEST: this needs testing
+  if (!validatePresenceOf(this.password)) {
 
     return next(new Error('Invalid password'));
 

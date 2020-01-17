@@ -58,6 +58,28 @@ class UserController extends ControllerModule {
 
   }
 
+  public async verifyEmail(req: Request, res: Response) {
+
+    try {
+
+      const payload = {
+        token: req.query.t
+      };
+
+      await this.userService.verifyEmail(payload);
+      res.status(200).json({
+        message: "Successfully verified",
+        status: 200
+      });
+
+    } catch ({ error, status }) {
+
+      this.handleError(res, error);
+
+    }
+
+  }
+
 
   public async remove(req: Request, res: Response) {
     //TODO: need to delete all the files that he only has access :O 

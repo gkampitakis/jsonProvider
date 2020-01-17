@@ -1,4 +1,4 @@
-import { Token as tokenModel } from './token.model';
+import { Token as tokenModel, Token } from './token.model';
 import { Request, Response } from 'express';
 import { Document } from "mongoose";
 import tokenParser from 'parse-bearer-token';
@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import autoBind from "auto-bind";
 import { ServiceModule } from "../../interfaces/ServiceModule";
 import { Service } from "typedi";
+import { UserI, User } from "../../user/user.model";
 
 export interface TokenModel extends Document {
   token: string;
@@ -25,12 +26,14 @@ export class TokenController extends ServiceModule {
 
   }
 
-  public async create(userId: string) {
+  public async create(userId: string, type: 'authorization' | 'verification') {
 
     if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token: string = this.generateToken();
-    const document: TokenModel = new tokenModel({ userId: userId, token: token }) as TokenModel;
+    const document: TokenModel = new tokenModel(
+      { userId: userId, token: token, type: type }
+    ) as TokenModel;
 
     await document.save();
 
@@ -68,30 +71,42 @@ export class TokenController extends ServiceModule {
 
   }
 
-  public retrieveUser(token: string): Promise<string> {
+  private retrieveUser(token: string): Promise<UserI> {
 
-    return new Promise((resolve, reject) => {
+    return tokenModel.findOne({ token: token })
+      .lean()
+      .exec()
+      .then(async (data: TokenModel) => {
 
-      tokenModel.findOne({ token: token })
-        .lean()
-        .exec()
-        .then((data: TokenModel) => {
+        if (!data) throw { message: 'Token not found', status: 404 };
 
-          if (!data) return reject('Token not found');
+        let user: UserI;
 
-          resolve(data.userId);
+        try {
 
-        })
-        .catch(err => {
+          user = await User.findById(data.userId).lean().exec();
 
-          reject(err);
+        } catch (error) {
 
-        });
+          throw error;
 
-    });
+        }
+
+        if (!user)
+          throw { message: 'User not found', status: 404 };
+
+        return user;
+
+      });
 
   }
 
+
+  public retrieveVerificationToken(token: string): any {
+
+    return Token.findOne({ type: 'verification', token: token });
+
+  }
 
   public invalidateTokens(userId: string): Promise<any> {
 
@@ -107,9 +122,29 @@ export class TokenController extends ServiceModule {
 
     try {
 
-      req.user = await this.retrieveUser(token);
+      const user: UserI = await this.retrieveUser(token);
 
-    } catch { }
+      if (!user.verified) {
+
+        res.status(401).json({
+          message: "Unverified email",
+          status: 401
+        });
+
+      }
+
+      req.user = user._id.toString();
+
+    } catch (error) {
+
+      const status = error.status || 500;
+
+      return res.status(status).json({
+        message: error.message,
+        status: status
+      });
+
+    }
 
     next();
 

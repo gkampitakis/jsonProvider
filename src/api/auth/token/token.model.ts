@@ -11,7 +11,7 @@ const TokenSchema = new Schema({
   },
   type: {
     type: String,
-    enum: ['authorization'],
+    enum: ['authorization', 'verification'],
     required: true,
     default: 'authorization'
   },

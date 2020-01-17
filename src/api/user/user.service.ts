@@ -1,14 +1,16 @@
 import { UserI, User } from "./user.model";
-import { TokenController } from "../auth/token/token.controller";
+import { TokenController, TokenModel } from "../auth/token/token.controller";
 import { Service } from "typedi";
 import { ServiceModule } from "../interfaces/ServiceModule";
+import { EmailController } from "../communication/email/email.controller";
 import 'reflect-metadata';
 
 @Service()
 export class UserService extends ServiceModule {
 
   constructor(
-    private tokenController: TokenController
+    private tokenController: TokenController,
+    private emailController: EmailController
   ) {
     super();
   }
@@ -20,9 +22,16 @@ export class UserService extends ServiceModule {
       try {
 
         const user: UserI = new User(payload.body) as UserI;
+
+        const { token } = await this.tokenController.create(
+          user._id.toString(),
+          'verification');
+
         const doc = await user.save();
 
         resolve(this.stripPassword(doc.toObject()));
+
+        this.sendVerificationEmail(user.email, user.username, token);
 
       } catch (error) {
 
@@ -31,6 +40,48 @@ export class UserService extends ServiceModule {
       }
 
     });
+
+  }
+
+  public verifyEmail(payload: { token: string }): Promise<any> {
+
+    return new Promise(async (resolve, reject) => {
+
+      let token: TokenModel;
+
+      try {
+
+        token = await this.tokenController.retrieveVerificationToken(payload.token);
+        console.log(token);
+
+        if (!token)
+          return reject(this.errorObject('Token not found', 404));
+
+        const user: any = await this.verifyUser(token.userId);
+
+        if (!user)
+          return reject(this.errorObject('User not found', 404));
+
+        resolve();
+
+      } catch (error) {
+
+        reject(this.errorObject(error.message, 500));
+
+      } finally {
+
+        if (token)
+          token.remove();
+
+      }
+
+    });
+
+  }
+
+  private verifyUser(id: string): Promise<any> {
+
+    return User.findByIdAndUpdate(id, { verified: true }).exec();
 
   }
 
@@ -115,7 +166,7 @@ export class UserService extends ServiceModule {
 
         doc.username = body?.username || doc.username;
         doc.email = body?.email || doc.email;
-        doc.image = body?.image || doc.image;
+        doc.image = body?.image || doc.image;//TODO: remove
         doc.password = body?.password || doc.password;
 
         await doc.save();
@@ -251,6 +302,16 @@ export class UserService extends ServiceModule {
     delete user.salt;
 
     return user;
+
+  }
+
+  private sendVerificationEmail(email: string, username: string, token: string): Promise<any> {
+
+    return this.emailController.send(email,
+      'Please Verify your email', {
+      token: token,
+      username: username
+    }, 'verifyEmail');
 
   }
 
