@@ -3,16 +3,23 @@ import mongoose from "mongoose";
 import { UserService } from "./user.service";
 import { UserI, User } from "./user.model";
 import { TokenService } from "../auth/token/token.service";
-import { TokenService as FakeService } from "../auth/token/__mocks__/tokenService";
+import { TokenService as TokenFakeService } from "../auth/token/__mocks__/tokenService";
+import { EmailController as EmailFakeController } from "../communication/__mocks__/emailController";
 import { JsonDoc } from "../jsonDocument/jsonDoc.model";
 import JsonDocService from "../jsonDocument/jsonDoc.service";
+import { EmailController } from "../communication/email/email.controller";
 
 let connection,
   tokenInvalidateSpy: jest.SpyInstance,
+  tokenRetrieveSpy: jest.SpyInstance,
+  emailSendSpy: jest.SpyInstance,
   user: UserI;
 
-const fakeService = new FakeService();
-Container.set(TokenService, fakeService);
+const tokenFakeService = new TokenFakeService(),
+  emailFakeController = new EmailFakeController();
+Container.set(TokenService, tokenFakeService);
+Container.set(EmailController, emailFakeController);
+
 const userService = Container.get(UserService);
 
 const jsonService: JsonDocService = Container.get(JsonDocService);
@@ -28,6 +35,11 @@ describe("Create User", () => {
       useCreateIndex: true
     });
 
+    emailSendSpy = jest.spyOn(emailFakeController, "send");
+    tokenRetrieveSpy = jest.spyOn(tokenFakeService, 'retrieveVerificationToken');
+
+    TokenFakeService.token = '123456789';
+
   });
 
   afterAll(async () => {
@@ -39,6 +51,8 @@ describe("Create User", () => {
   afterEach(async () => {
 
     await User.deleteMany({});
+    emailSendSpy.mockClear();
+    tokenRetrieveSpy.mockClear();
 
   });
 
@@ -144,10 +158,15 @@ describe("Create User", () => {
       }
     };
 
-    const user: UserI = await userService.createUser(payload);;
+    const user: UserI = await userService.createUser(payload);
 
     expect(user.username).toEqual(payload.body.username);
     expect(user.email).toEqual(payload.body.email);
+    expect(emailSendSpy).toHaveBeenNthCalledWith(1,
+      payload.body.email,
+      'Please Verify your email', {
+      token: '123456789'
+    }, 'verifyEmail');
 
   });
 
@@ -230,14 +249,14 @@ describe("Remove User", () => {
     };
 
     user = await userService.createUser(payload);
-    tokenInvalidateSpy = jest.spyOn(fakeService, "invalidateTokens");
+    tokenInvalidateSpy = jest.spyOn(tokenFakeService, "invalidateTokens");
 
   });
 
   afterAll(async () => {
 
     await User.deleteMany({});
-    tokenInvalidateSpy.mockReset();
+    tokenInvalidateSpy.mockClear();
 
   });
 
@@ -295,14 +314,14 @@ describe("Update User", () => {
     };
 
     user = await userService.createUser(payload);
-    tokenInvalidateSpy = jest.spyOn(fakeService, "invalidateTokens");
+    tokenInvalidateSpy = jest.spyOn(tokenFakeService, "invalidateTokens");
 
   });
 
   afterAll(async () => {
 
     await User.deleteMany({});
-    tokenInvalidateSpy.mockReset();
+    tokenInvalidateSpy.mockClear();
 
   });
 
@@ -335,7 +354,7 @@ describe("Update User", () => {
     }
 
   });
-  
+
   it("Should update user", async () => {
 
     const payload = {
@@ -370,14 +389,14 @@ describe("Retrieve Me", () => {
     };
 
     user = await userService.createUser(payload);
-    tokenInvalidateSpy = jest.spyOn(fakeService, "invalidateTokens");
+    tokenInvalidateSpy = jest.spyOn(tokenFakeService, "invalidateTokens");
 
   });
 
   afterAll(async () => {
 
     await User.deleteMany({});
-    tokenInvalidateSpy.mockReset();
+    tokenInvalidateSpy.mockClear();
 
   });
 
@@ -560,4 +579,57 @@ describe("Remove Document", () => {
     expect(result1.documents.length).toEqual(0);
 
   });
+
+});
+
+describe("when verifying email should retrieve token", () => {
+
+  beforeAll(async () => {
+
+    const payload = {
+      body: {
+        username: "Giorgos Kampitakis",
+        email: "gkabitakis@gmail.com",
+        password: "12345"
+      }
+    };
+
+    user = await userService.createUser(payload);
+
+  });
+
+  it("if existent update user", async () => {
+
+    TokenFakeService.token = '123456789';
+    TokenFakeService.userId = user._id.toString();
+
+    await userService.verifyEmail({ token: '123456789' });
+
+    const result: UserI = await userService.retrieveMe({ user: user._id.toString() });
+
+    expect(result.verified).toBe(true);
+    expect(tokenRetrieveSpy).toHaveBeenNthCalledWith(1, '123456789');
+
+  });
+
+
+  it("if not existent not update user and throw error", async () => {
+
+    TokenFakeService.userId = user._id.toString();
+    TokenFakeService.token = '';
+
+    try {
+
+      await userService.verifyEmail({ token: '123456789' });
+
+    } catch ({ error, status }) {
+
+      expect(status).toEqual(404);
+      expect(error.message).toEqual("Token not found");
+      expect(tokenRetrieveSpy).toHaveBeenNthCalledWith(1, '123456789');
+
+    }
+
+  });
+
 });

@@ -19,8 +19,8 @@ const user = "5e0a02aed716316c24be80b5",
 
 beforeEach(() => {
 
-  addDocumentSpy.mockReset();
-  removeDocumentSpy.mockReset();
+  addDocumentSpy.mockClear();
+  removeDocumentSpy.mockClear();
 
 });
 

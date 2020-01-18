@@ -31,7 +31,7 @@ export class UserService extends ServiceModule {
 
         resolve(this.stripPassword(doc.toObject()));
 
-        this.sendVerificationEmail(user.email, user.username, token);
+        this.sendVerificationEmail(user.email, token);
 
       } catch (error) {
 
@@ -52,7 +52,6 @@ export class UserService extends ServiceModule {
       try {
 
         token = await this.tokenService.retrieveVerificationToken(payload.token);
-        console.log(token);
 
         if (!token)
           return reject(this.errorObject('Token not found', 404));
@@ -258,7 +257,6 @@ export class UserService extends ServiceModule {
 
   public removeDocument(documentId: string, ...id: string[]): Promise<any> {
 
-
     const promises: Promise<any>[] = [];
 
     for (let i = 0; i < id.length; i++) {
@@ -306,12 +304,11 @@ export class UserService extends ServiceModule {
 
   }
 
-  private sendVerificationEmail(email: string, username: string, token: string): Promise<any> {
+  private sendVerificationEmail(email: string, token: string): Promise<any> {
 
     return this.emailController.send(email,
       'Please Verify your email', {
-      token: token,
-      username: username
+      token: token
     }, 'verifyEmail');
 
   }

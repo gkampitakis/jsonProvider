@@ -122,25 +122,6 @@ class UserController extends ControllerModule {
 
   }
 
-
-  // public async emailTest(req: Request, res: Response) {
-  //   //TODO: this will be removed
-  //   try {
-
-  //     const test = await emailController.send('gkabitakis@gmail.com', 'test',
-  //       { password: 'test', fname: 'myname', lname: 'test2' }, 'changePassword');
-
-  //     res.status(200).json(test);
-
-  //   } catch ({ error, status }) {
-
-  // this.logger.error(error.message);
-  //     this.handleError(res, error, status);
-
-  //   }
-
-  // }
-
   public async me(req: Request, res: Response) {
 
     const payload = {

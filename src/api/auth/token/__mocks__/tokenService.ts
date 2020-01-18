@@ -1,9 +1,14 @@
+import { Token } from "../token.model";
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export class TokenService {
 
-  public async create(userId: string) {
+  public static token;
+  public static userId;
 
-    return { token: "123456789", userId: userId };
+  public async create(userId: string, type: string) {
+
+    return { token: TokenService.token, userId: userId };
 
   }
 
@@ -15,7 +20,7 @@ export class TokenService {
 
   public async retrieve(userId: string) {
 
-    return "123456789";
+    return TokenService.token;
 
   }
 
@@ -25,9 +30,23 @@ export class TokenService {
 
   }
 
-  public invalidateTokens(userId: string): Promise<any> {
+  public async invalidateTokens(userId: string): Promise<any> {
 
     return Promise.resolve();
+
+  }
+
+  public async retrieveVerificationToken(token: string) {
+
+    if (!TokenService.token) return Promise.resolve(undefined);
+
+    const result = new Token({
+      token: token,
+      type: 'verification',
+      userId: TokenService.userId
+    });
+
+    return Promise.resolve(result);
 
   }
 
