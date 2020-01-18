@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-export class TokenController {
+export class TokenService {
 
   public async create(userId: string) {
 

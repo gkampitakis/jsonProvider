@@ -1,5 +1,5 @@
 import { UserI, User } from "./user.model";
-import { TokenController, TokenModel } from "../auth/token/token.controller";
+import { TokenService, TokenModel } from "../auth/token/token.service";
 import { Service } from "typedi";
 import { ServiceModule } from "../interfaces/ServiceModule";
 import { EmailController } from "../communication/email/email.controller";
@@ -9,7 +9,7 @@ import 'reflect-metadata';
 export class UserService extends ServiceModule {
 
   constructor(
-    private tokenController: TokenController,
+    private tokenService: TokenService,
     private emailController: EmailController
   ) {
     super();
@@ -23,7 +23,7 @@ export class UserService extends ServiceModule {
 
         const user: UserI = new User(payload.body) as UserI;
 
-        const { token } = await this.tokenController.create(
+        const { token } = await this.tokenService.create(
           user._id.toString(),
           'verification');
 
@@ -51,7 +51,7 @@ export class UserService extends ServiceModule {
 
       try {
 
-        token = await this.tokenController.retrieveVerificationToken(payload.token);
+        token = await this.tokenService.retrieveVerificationToken(payload.token);
         console.log(token);
 
         if (!token)
@@ -134,7 +134,7 @@ export class UserService extends ServiceModule {
 
         await doc.remove();
 
-        this.tokenController.invalidateTokens(doc._id);
+        this.tokenService.invalidateTokens(doc._id);
 
         resolve();
 
@@ -165,8 +165,7 @@ export class UserService extends ServiceModule {
           return reject(this.errorObject("User not found", 404));
 
         doc.username = body?.username || doc.username;
-        doc.email = body?.email || doc.email;
-        doc.image = body?.image || doc.image;//TODO: remove
+        doc.email = body?.email || doc.email;//TODO: if update email again verify email for updating email
         doc.password = body?.password || doc.password;
 
         await doc.save();
@@ -181,6 +180,8 @@ export class UserService extends ServiceModule {
     });
 
   }
+
+  //TODO: reset password function
 
   public retrieveMe(payload: { user: string }): Promise<any> {
 

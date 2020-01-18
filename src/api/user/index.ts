@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import controller from './user.controller';
-import { TokenController } from "../auth/token/token.controller";
+import { TokenService } from "../auth/token/token.service";
 import { Container } from "typedi";
 
 const controllerDI = Container.get(controller);
-const tokenController: TokenController = new TokenController();
+const tokenController: TokenService = new TokenService();
 const userRouter: Router = Router();
 
 userRouter.get('/verify', controllerDI.verifyEmail);

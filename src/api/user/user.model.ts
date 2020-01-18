@@ -9,7 +9,6 @@ export interface UserI extends Document {
   email: string;
   password: string;
   salt: string;
-  image: string;
   verified: boolean;
   documents: Array<any>;
   authenticate(password: string, callback?: Function): Function | boolean;
@@ -37,10 +36,6 @@ const userSchema = new Schema({
   verified: {
     type: Boolean,
     default: false
-  },
-  image: {
-    type: String,
-    default: ''
   },
   createdAt: {
     type: Date,

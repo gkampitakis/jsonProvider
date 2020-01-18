@@ -16,7 +16,7 @@ export interface TokenModel extends Document {
 };
 
 @Service()
-export class TokenController extends ServiceModule {
+export class TokenService extends ServiceModule {
 
   constructor() {
 

@@ -2,8 +2,8 @@ import { Container } from "typedi";
 import mongoose from "mongoose";
 import { UserService } from "./user.service";
 import { UserI, User } from "./user.model";
-import { TokenController } from "../auth/token/token.controller";
-import { TokenController as FakeService } from "../auth/token/__mocks__/tokenController";
+import { TokenService } from "../auth/token/token.service";
+import { TokenService as FakeService } from "../auth/token/__mocks__/tokenService";
 import { JsonDoc } from "../jsonDocument/jsonDoc.model";
 import JsonDocService from "../jsonDocument/jsonDoc.service";
 
@@ -12,7 +12,7 @@ let connection,
   user: UserI;
 
 const fakeService = new FakeService();
-Container.set(TokenController, fakeService);
+Container.set(TokenService, fakeService);
 const userService = Container.get(UserService);
 
 const jsonService: JsonDocService = Container.get(JsonDocService);

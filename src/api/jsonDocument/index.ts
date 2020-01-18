@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import controller from './jsonDoc.controller';
-import { TokenController } from "../auth/token/token.controller";
+import { TokenService } from "../auth/token/token.service";
 import { Container } from "typedi";
 
 
 const controllerDI: controller = Container.get(controller);
-const tokenController: TokenController = new TokenController();
+const tokenController: TokenService = new TokenService();
 const jsonDocRouter: Router = Router();
 
 jsonDocRouter.use(tokenController.prepareRequestUser);
