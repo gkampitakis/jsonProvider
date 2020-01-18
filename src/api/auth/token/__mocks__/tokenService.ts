@@ -1,4 +1,4 @@
-import { Token } from "../token.model";
+import { TokenModel } from "../token.model";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export class TokenService {
@@ -40,7 +40,7 @@ export class TokenService {
 
     if (!TokenService.token) return Promise.resolve(undefined);
 
-    const result = new Token({
+    const result = new TokenModel({
       token: token,
       type: 'verification',
       userId: TokenService.userId

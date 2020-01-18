@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Token } from "./token.model";
+import { TokenModel } from "./token.model";
 import { TokenService } from "./token.service";
 
 let connection,
@@ -29,7 +29,7 @@ describe('Token Create', () => {
 
   afterEach(async () => {
 
-    await Token.deleteMany({});
+    await TokenModel.deleteMany({});
 
   });
 

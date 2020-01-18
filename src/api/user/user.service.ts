@@ -1,9 +1,10 @@
-import { UserI, User } from "./user.model";
-import { TokenService, TokenModel } from "../auth/token/token.service";
+import { UserI, UserModel } from "./user.model";
+import { TokenService } from "../auth/token/token.service";
 import { Service } from "typedi";
 import { ServiceModule } from "../interfaces/ServiceModule";
 import { EmailController } from "../communication/email/email.controller";
 import 'reflect-metadata';
+import { TokenI } from "../auth/token/token.model";
 
 @Service()
 export class UserService extends ServiceModule {
@@ -21,7 +22,7 @@ export class UserService extends ServiceModule {
 
       try {
 
-        const user: UserI = new User(payload.body) as UserI;
+        const user: UserI = new UserModel(payload.body) as UserI;
 
         const { token } = await this.tokenService.create(
           user._id.toString(),
@@ -47,7 +48,7 @@ export class UserService extends ServiceModule {
 
     return new Promise(async (resolve, reject) => {
 
-      let token: TokenModel;
+      let token: TokenI;
 
       try {
 
@@ -78,9 +79,10 @@ export class UserService extends ServiceModule {
 
   }
 
+
   private verifyUser(id: string): Promise<any> {
 
-    return User.findByIdAndUpdate(id, { verified: true }).exec();
+    return UserModel.findByIdAndUpdate(id, { verified: true }).exec();
 
   }
 
@@ -95,7 +97,7 @@ export class UserService extends ServiceModule {
 
       try {
 
-        const user = await User.findById(id)
+        const user = await UserModel.findById(id)
           .populate('documents')//FIXME:
           .lean()
           .exec();
@@ -126,7 +128,7 @@ export class UserService extends ServiceModule {
 
       try {
 
-        const doc: UserI = await User.findById(user).exec() as UserI;
+        const doc: UserI = await UserModel.findById(user).exec() as UserI;
 
         if (!doc) //NOTE: if we end up here something has gone really bad
           return reject(this.errorObject("User not found", 404));
@@ -158,7 +160,7 @@ export class UserService extends ServiceModule {
 
       try {
 
-        const doc: UserI = await User.findById(user).exec() as UserI;
+        const doc: UserI = await UserModel.findById(user).exec() as UserI;
 
         if (!doc)//NOTE: if we end up here something has gone really bad
           return reject(this.errorObject("User not found", 404));
@@ -193,7 +195,7 @@ export class UserService extends ServiceModule {
 
       try {
 
-        const doc = await User.findById(user)
+        const doc = await UserModel.findById(user)
           .populate('documents', '-_id -__v')
           .lean()
           .exec();
@@ -223,7 +225,7 @@ export class UserService extends ServiceModule {
 
         try {
 
-          const user: UserI = await User.findById(id[i]).exec() as UserI;
+          const user: UserI = await UserModel.findById(id[i]).exec() as UserI;
 
           if (!user)
             return reject(this.errorObject("User not found", 404));
@@ -265,7 +267,7 @@ export class UserService extends ServiceModule {
 
         try {
 
-          const user: UserI = await User.findById(id).exec() as UserI;
+          const user: UserI = await UserModel.findById(id).exec() as UserI;
 
           if (!user)
             return reject(this.errorObject("User not found", 404));

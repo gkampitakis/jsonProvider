@@ -1,4 +1,17 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
+
+export type TokenType =
+  'authorization' |
+  'verification' |
+  'passwordReset';
+
+export interface TokenI extends Document {
+  token: string;
+  created: Date;
+  type: TokenType;
+  userId: string;
+  requestedAt: Date;
+};
 
 const TokenSchema = new Schema({
   token: {
@@ -11,13 +24,21 @@ const TokenSchema = new Schema({
   },
   type: {
     type: String,
-    enum: ['authorization', 'verification'],
+    enum: [
+      'authorization',
+      'verification',
+      'passwordReset'
+    ],
     required: true,
     default: 'authorization'
   },
   userId: {
     type: String,
     required: true
+  },
+  requestedAt: {
+    type: Date,
+    default: Date.now()
   }
 });
 
@@ -26,4 +47,4 @@ TokenSchema.index({ created: 1 }, {
 });
 
 
-export const Token = model('Token', TokenSchema, 'Token');
+export const TokenModel = model('Token', TokenSchema, 'Token');

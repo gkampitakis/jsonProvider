@@ -232,4 +232,4 @@ userSchema.methods = {
   }
 };
 
-export const User = model('User', userSchema, 'User');
+export const UserModel = model('User', userSchema, 'User');

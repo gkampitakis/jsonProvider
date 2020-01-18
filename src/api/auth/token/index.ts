@@ -1,15 +1,16 @@
-import { UserI, User } from "../../user/user.model";
-import { TokenService, TokenModel } from './token.service';
+import { UserI, UserModel } from "../../user/user.model";
+import { TokenService } from './token.service';
 import { Router, Request, Response } from 'express';
 import { Container } from "typedi";
 import { setup } from '../local/passport';
 import passport from 'passport';
+import { TokenI } from "./token.model";
 
 
 const tokenRouter = Router();
 const tokenServiceDI = Container.get(TokenService);
 
-setup(User);
+setup(UserModel);
 
 tokenRouter.post('/', (req: Request, res: Response, next: Function) => {
 
@@ -22,7 +23,7 @@ tokenRouter.post('/', (req: Request, res: Response, next: Function) => {
 
     try {
 
-      const token: TokenModel = await tokenServiceDI.create(user._id, 'authorization') as TokenModel;
+      const token: TokenI = await tokenServiceDI.create(user._id, 'authorization') as TokenI;
 
       return res.status(200).json(token);
 

@@ -1,7 +1,7 @@
 import { Container } from "typedi";
 import mongoose from "mongoose";
 import { UserService } from "./user.service";
-import { UserI, User } from "./user.model";
+import { UserI, UserModel } from "./user.model";
 import { TokenService } from "../auth/token/token.service";
 import { TokenService as TokenFakeService } from "../auth/token/__mocks__/tokenService";
 import { EmailController as EmailFakeController } from "../communication/__mocks__/emailController";
@@ -50,7 +50,7 @@ describe("Create User", () => {
 
   afterEach(async () => {
 
-    await User.deleteMany({});
+    await UserModel.deleteMany({});
     emailSendSpy.mockClear();
     tokenRetrieveSpy.mockClear();
 
@@ -191,7 +191,7 @@ describe("Retrieve User", () => {
 
   afterAll(async () => {
 
-    await User.deleteMany({});
+    await UserModel.deleteMany({});
 
   });
 
@@ -255,7 +255,7 @@ describe("Remove User", () => {
 
   afterAll(async () => {
 
-    await User.deleteMany({});
+    await UserModel.deleteMany({});
     tokenInvalidateSpy.mockClear();
 
   });
@@ -320,7 +320,7 @@ describe("Update User", () => {
 
   afterAll(async () => {
 
-    await User.deleteMany({});
+    await UserModel.deleteMany({});
     tokenInvalidateSpy.mockClear();
 
   });
@@ -395,7 +395,7 @@ describe("Retrieve Me", () => {
 
   afterAll(async () => {
 
-    await User.deleteMany({});
+    await UserModel.deleteMany({});
     tokenInvalidateSpy.mockClear();
 
   });
@@ -485,7 +485,7 @@ describe("Add Document", () => {
 
   afterAll(async () => {
 
-    await User.deleteMany({});
+    await UserModel.deleteMany({});
 
   });
 
@@ -555,7 +555,7 @@ describe("Remove Document", () => {
 
   afterAll(async () => {
 
-    await User.deleteMany({});
+    await UserModel.deleteMany({});
 
   });
 

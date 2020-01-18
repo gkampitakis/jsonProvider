@@ -1,19 +1,11 @@
-import { Token as tokenModel, Token } from './token.model';
+import { TokenModel, TokenType, TokenI } from './token.model';
 import { Request, Response } from 'express';
-import { Document } from "mongoose";
 import tokenParser from 'parse-bearer-token';
 import crypto from 'crypto';
 import autoBind from "auto-bind";
 import { ServiceModule } from "../../interfaces/ServiceModule";
 import { Service } from "typedi";
-import { UserI, User } from "../../user/user.model";
-
-export interface TokenModel extends Document {
-  token: string;
-  created: Date;
-  type: ['authorization'];
-  userId: string;
-};
+import { UserI, UserModel } from "../../user/user.model";
 
 @Service()
 export class TokenService extends ServiceModule {
@@ -26,14 +18,14 @@ export class TokenService extends ServiceModule {
 
   }
 
-  public async create(userId: string, type: 'authorization' | 'verification') {
+  public async create(userId: string, type: TokenType) {
 
     if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
     const token: string = this.generateToken();
-    const document: TokenModel = new tokenModel(
+    const document: TokenI = new TokenModel(
       { userId: userId, token: token, type: type }
-    ) as TokenModel;
+    ) as TokenI;
 
     await document.save();
 
@@ -45,7 +37,7 @@ export class TokenService extends ServiceModule {
 
     if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
-    const token = await tokenModel.findOne({ userId: userId }).exec();
+    const token = await TokenModel.findOne({ userId: userId }).exec();
 
     if (token) return await token.remove();
 
@@ -57,7 +49,7 @@ export class TokenService extends ServiceModule {
 
     if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
-    const token = await tokenModel.findOne({ userId: userId }).lean().exec();
+    const token = await TokenModel.findOne({ userId: userId }).lean().exec();
 
     if (!token) throw new Error('Token not found');
 
@@ -73,10 +65,10 @@ export class TokenService extends ServiceModule {
 
   private retrieveUser(token: string): Promise<UserI> {
 
-    return tokenModel.findOne({ token: token })
+    return TokenModel.findOne({ token: token })
       .lean()
       .exec()
-      .then(async (data: TokenModel) => {
+      .then(async (data: TokenI) => {
 
         if (!data) throw { message: 'Token not found', status: 404 };
 
@@ -84,7 +76,7 @@ export class TokenService extends ServiceModule {
 
         try {
 
-          user = await User.findById(data.userId).lean().exec();
+          user = await UserModel.findById(data.userId).lean().exec();
 
         } catch (error) {
 
@@ -104,13 +96,13 @@ export class TokenService extends ServiceModule {
 
   public retrieveVerificationToken(token: string): any {
 
-    return Token.findOne({ type: 'verification', token: token });
+    return TokenModel.findOne({ type: 'verification', token: token });
 
   }
 
   public invalidateTokens(userId: string): Promise<any> {
 
-    return tokenModel.deleteMany({ userId: userId }).exec();
+    return TokenModel.deleteMany({ userId: userId }).exec();
 
   }
 
