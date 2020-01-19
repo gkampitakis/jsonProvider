@@ -36,7 +36,7 @@ describe("Create User", () => {
     });
 
     emailSendSpy = jest.spyOn(emailFakeController, "send");
-    tokenRetrieveSpy = jest.spyOn(tokenFakeService, 'retrieveVerificationToken');
+    tokenRetrieveSpy = jest.spyOn(tokenFakeService, 'retrieveByToken');
 
     TokenFakeService.token = '123456789';
 
@@ -608,7 +608,7 @@ describe("when verifying email should retrieve token", () => {
     const result: UserI = await userService.retrieveMe({ user: user._id.toString() });
 
     expect(result.verified).toBe(true);
-    expect(tokenRetrieveSpy).toHaveBeenNthCalledWith(1, '123456789');
+    expect(tokenRetrieveSpy).toHaveBeenNthCalledWith(1, '123456789','verification');
 
   });
 
@@ -626,7 +626,7 @@ describe("when verifying email should retrieve token", () => {
 
       expect(status).toEqual(404);
       expect(error.message).toEqual("Token not found");
-      expect(tokenRetrieveSpy).toHaveBeenNthCalledWith(1, '123456789');
+      expect(tokenRetrieveSpy).toHaveBeenNthCalledWith(1, '123456789','verification');
 
     }
 

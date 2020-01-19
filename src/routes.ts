@@ -2,7 +2,7 @@ import { HelperService } from './util/helper.service';
 import express from 'express';
 import jsonDocRouter from './api/jsonDocument';
 import userRouter from './api/user';
-import tokenRouter from './api/auth/token';
+import authRouter from './api/auth';
 
 export function setupRoutes(app: express.Application) {
 
@@ -11,7 +11,7 @@ export function setupRoutes(app: express.Application) {
 
   app.use('/json/doc', jsonDocRouter);
   app.use('/user', userRouter);
-  app.use('/auth', tokenRouter);
+  app.use('/auth', authRouter);
 
   app.use('/version', $.versionInfo);
 

@@ -4,6 +4,8 @@ export abstract class ServiceModule {
 
   public isValidId(...ids): boolean {
 
+    if (ids.length === 1 && ids[0] === "") return true;
+
     for (const id of ids) {
 
       if (!ObjectID.isValid(id)) return false;

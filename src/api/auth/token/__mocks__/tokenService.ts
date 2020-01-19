@@ -18,7 +18,7 @@ export class TokenService {
 
   }
 
-  public async retrieve(userId: string) {
+  public async retrieveByUser(userId: string) {
 
     return TokenService.token;
 
@@ -36,13 +36,13 @@ export class TokenService {
 
   }
 
-  public async retrieveVerificationToken(token: string) {
+  public async retrieveByToken(token: string, type: string) {
 
     if (!TokenService.token) return Promise.resolve(undefined);
 
     const result = new TokenModel({
       token: token,
-      type: 'verification',
+      type: type,
       userId: TokenService.userId
     });
 

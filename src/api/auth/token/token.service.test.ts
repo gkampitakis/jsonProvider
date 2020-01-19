@@ -58,7 +58,7 @@ describe('Remove Token', () => {
 
     try {
 
-      await tokenService.retrieve(user_Id);
+      await tokenService.retrieveByUser(user_Id);
 
     } catch (error) {
 
@@ -82,7 +82,7 @@ describe('Retrieve Token', () => {
   it("should remove token", async () => {
 
 
-    const token = await tokenService.retrieve(user_Id);
+    const token = await tokenService.retrieveByUser(user_Id);
 
     expect(token).not.toBe(undefined);
 
@@ -101,7 +101,7 @@ describe('Retrieve Verification Token', () => {
 
   it("should retrieve token", async () => {
 
-    const result = await tokenService.retrieveVerificationToken(token);
+    const result = await tokenService.retrieveByToken(token, 'verification');
 
     expect(result).not.toBe(undefined);
 

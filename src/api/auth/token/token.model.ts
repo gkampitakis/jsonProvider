@@ -9,7 +9,8 @@ export interface TokenI extends Document {
   token: string;
   created: Date;
   type: TokenType;
-  userId: string;
+  userId?: string;
+  email?: string;
   requestedAt: Date;
 };
 
@@ -33,8 +34,10 @@ const TokenSchema = new Schema({
     default: 'authorization'
   },
   userId: {
-    type: String,
-    required: true
+    type: String
+  },
+  email: {
+    type: String
   },
   requestedAt: {
     type: Date,

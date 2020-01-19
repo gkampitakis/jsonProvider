@@ -18,18 +18,21 @@ export class TokenService extends ServiceModule {
 
   }
 
-  public async create(userId: string, type: TokenType) {
+  public async create(userId: string, type: TokenType, email = "", ) {
 
     if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
-    const token: string = this.generateToken();
-    const document: TokenI = new TokenModel(
-      { userId: userId, token: token, type: type }
-    ) as TokenI;
+    const token: string = this.generateToken(),
+      document: TokenI = new TokenModel({
+        userId: userId,
+        token: token,
+        type: type,
+        email: email
+      }) as TokenI;
 
     await document.save();
 
-    return { token: token, userId: userId };
+    return document;
 
   }
 
@@ -45,15 +48,21 @@ export class TokenService extends ServiceModule {
 
   }
 
-  public async retrieve(userId: string) {
+  public async retrieveByUser(userId: string): Promise<TokenI> {
 
     if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
-    const token = await TokenModel.findOne({ userId: userId }).lean().exec();
+    const token = await TokenModel.findOne({ userId: userId, type: 'authorization' }).lean().exec();
 
     if (!token) throw new Error('Token not found');
 
     return token;
+
+  }
+
+  public retrieveByToken(token: string, type: TokenType): any {
+
+    return TokenModel.findOne({ type: type, token: token });
 
   }
 
@@ -90,13 +99,6 @@ export class TokenService extends ServiceModule {
         return user;
 
       });
-
-  }
-
-
-  public retrieveVerificationToken(token: string): any {
-
-    return TokenModel.findOne({ type: 'verification', token: token });
 
   }
 
