@@ -5,7 +5,7 @@ import validator from 'validator';
 import path from 'path';
 import { Configurator } from '../../../util/decorators/configurator';
 import { Service } from "typedi";
-//TODO: this needs clearing testing and error handling
+
 @Service()
 export class EmailController {
 

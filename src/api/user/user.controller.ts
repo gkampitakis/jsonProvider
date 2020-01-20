@@ -142,6 +142,49 @@ class UserController extends ControllerModule {
 
   }
 
+  public async passwordResetRequest(req: Request, res: Response) {
+
+    try {
+
+      const payload = {
+        email: req.body.email
+      };
+
+      await this.userService.passwordResetRequest(payload);
+
+      return res.status(200).json({
+        message: "Reset email was sent"
+      });
+
+    } catch ({ error, status }) {
+
+      this.logger.error(error.message);
+      this.handleError(res, error, status);
+
+    }
+
+  }
+
+  public async passwordReset(req: Request, res: Response) {
+
+    try {
+
+      const payload = {
+        token: req.query.token,
+        password: req.body.password
+      };
+
+      await this.userService.passwordReset(payload);
+
+    } catch ({ error, status }) {
+
+      this.logger.error(error.message);
+      this.handleError(res, error, status);
+
+    }
+
+  }
+
 }
 
 export default UserController;

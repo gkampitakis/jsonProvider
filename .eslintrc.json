@@ -63,6 +63,7 @@
         "tabWidth": 4
       }
     ],
+    "prefer-rest-params": "off",
     "object-shorthand": [
       "off"
     ],

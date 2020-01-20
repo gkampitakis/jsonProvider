@@ -3,10 +3,9 @@ import controller from './jsonDoc.controller';
 import { TokenService } from "../auth/token/token.service";
 import { Container } from "typedi";
 
-
-const controllerDI: controller = Container.get(controller);
-const tokenController: TokenService = new TokenService();
-const jsonDocRouter: Router = Router();
+const controllerDI: controller = Container.get(controller),
+  tokenController: TokenService = new TokenService(),
+  jsonDocRouter: Router = Router();
 
 jsonDocRouter.use(tokenController.prepareRequestUser);
 
