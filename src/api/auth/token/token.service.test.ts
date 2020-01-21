@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
-import { TokenModel } from "./token.model";
-import { TokenService } from "./token.service";
+import { TokenModel, TokenI } from './token.model';
+import { TokenService } from './token.service';
 
 let connection,
-  token: string;
+  token: string,
+  result: TokenI;
 
 const tokenService = new TokenService(),
   user_Id = '5e190be690b8fb10d070dffe';
@@ -23,17 +24,12 @@ describe('Token Create', () => {
 
   afterAll(async () => {
 
+    await TokenModel.deleteMany({});
     await connection.close();
 
   });
 
-  afterEach(async () => {
-
-    await TokenModel.deleteMany({});
-
-  });
-
-  it("should create a token containing the provided userId", async () => {
+  it('should create a token containing the provided userId', async () => {
 
     const { token, userId } = await tokenService.create(user_Id, 'authorization');
 
@@ -46,43 +42,78 @@ describe('Token Create', () => {
 
 describe('Remove Token', () => {
 
-  beforeEach(async () => {
+  beforeAll(async () => {
 
     await tokenService.create(user_Id, 'authorization');
 
   });
 
-  it("should remove token", async () => {
+  afterAll(async () => {
+
+    await TokenModel.deleteMany({});
+
+  });
+
+  it('should remove token', async () => {
 
     await tokenService.remove(user_Id);
 
-    try {
+    const token = await tokenService.retrieveToken({ userId: user_Id });
 
-      await tokenService.retrieveByUser(user_Id);
-
-    } catch (error) {
-
-      expect(error.message).toBe('Token not found');
-
-    }
+    expect(token).toBe(null);
 
   });
 
 });
 
+describe('Update Token', () => {
+
+  beforeAll(async () => {
+
+    result = await tokenService.create(user_Id, 'authorization');
+
+  });
+
+  afterAll(async () => {
+
+    await TokenModel.deleteMany({});
+
+  });
+
+  it('should update token', async () => {
+
+    await tokenService.updateToken(result._id.toString(), {
+      requestThrottle: {
+        date: Date.now(),
+        counter: 10
+      }
+    });
+
+    result = await tokenService.retrieveToken({ _id: result._id.toString() });
+
+    expect(result.requestThrottle.counter).toBe(10);
+
+  }, 30000);
+
+});
 
 describe('Retrieve Token', () => {
 
-  beforeEach(async () => {
+  beforeAll(async () => {
 
     await tokenService.create(user_Id, 'authorization');
 
   });
 
-  it("should remove token", async () => {
+  afterAll(async () => {
 
+    await TokenModel.deleteMany({});
 
-    const token = await tokenService.retrieveByUser(user_Id);
+  });
+
+  it('should remove token', async () => {
+
+    const token = await tokenService.retrieveToken({ userId: user_Id });
 
     expect(token).not.toBe(undefined);
 
@@ -92,18 +123,90 @@ describe('Retrieve Token', () => {
 
 describe('Retrieve Verification Token', () => {
 
-  beforeEach(async () => {
+  beforeAll(async () => {
 
     const result = await tokenService.create(user_Id, 'verification');
     token = result.token;
 
   });
 
-  it("should retrieve token", async () => {
+  afterAll(async () => {
 
-    const result = await tokenService.retrieveByToken(token, 'verification');
+    await TokenModel.deleteMany({});
+
+  });
+
+  it('should retrieve token', async () => {
+
+    const result = await tokenService
+      .retrieveToken({ token: token, type: 'verification' });
 
     expect(result).not.toBe(undefined);
+
+  });
+
+});
+
+describe('Password Request Token Throttle', () => {
+
+
+  afterEach(async () => {
+
+    await TokenModel.deleteMany({});
+
+  });
+
+  it('should create a token for password request', async () => {
+
+    await tokenService.passwordRequestThrottle(user_Id);
+
+    result = await tokenService.retrieveToken({ userId: user_Id });
+
+    expect(result).not.toBe(null);
+    expect(result.userId).toBe(user_Id);
+    expect(result.requestThrottle.counter).toBe(1);
+    expect(result.type).toBe('passwordReset');
+
+  });
+
+  it('should return same token with updated counter', async () => {
+
+    const req1 = await tokenService.passwordRequestThrottle(user_Id),
+      req2 = await tokenService.passwordRequestThrottle(user_Id),
+      req3 = await tokenService.passwordRequestThrottle(user_Id);
+
+    expect(req1.token).toBe(req2.token);
+    expect(req2.token).toBe(req3.token);
+    expect(req2.requestThrottle.counter).toBe(2);
+    expect(req3.requestThrottle.counter).toBe(3);
+
+  });
+
+  it('should reset the counter if date changed', async () => {
+
+    await tokenService.passwordRequestThrottle(user_Id);
+    await tokenService.passwordRequestThrottle(user_Id);
+    await tokenService.passwordRequestThrottle(user_Id);
+    const req = await tokenService.passwordRequestThrottle(user_Id, true);
+
+    expect(req.requestThrottle.counter).toBe(1);
+
+  });
+
+  it('should throw error of maximum requests', async () => {
+
+    try {
+
+      await tokenService.passwordRequestThrottle(user_Id);
+      await tokenService.passwordRequestThrottle(user_Id);
+      await tokenService.passwordRequestThrottle(user_Id);
+      await tokenService.passwordRequestThrottle(user_Id);
+
+    } catch (error) {
+
+      expect(error.message).toBe('Reached maximum requests');
+
+    }
 
   });
 

@@ -6,6 +6,7 @@ import autoBind from "auto-bind";
 import { ServiceModule } from "../../interfaces/ServiceModule";
 import { Service } from "typedi";
 import { UserI, UserModel } from "../../user/user.model";
+import moment from 'moment';
 
 @Service()
 export class TokenService extends ServiceModule {
@@ -18,7 +19,7 @@ export class TokenService extends ServiceModule {
 
   }
 
-  public async create(userId: string, type: TokenType, email = "", ) {
+  public async create(userId: string, type: TokenType) {
 
     if (!this.isValidId(userId)) throw new Error('Invalid id provided');
 
@@ -26,14 +27,19 @@ export class TokenService extends ServiceModule {
       document: TokenI = new TokenModel({
         userId: userId,
         token: token,
-        type: type,
-        email: email
+        type: type
       }) as TokenI;
 
     await document.save();
 
     return document;
 
+  }
+
+  public updateToken(id: string, payload: any): Promise<TokenI> {
+
+    return TokenModel.findByIdAndUpdate(id, payload, { new: true }).lean().exec();
+    //Note: here if we change type and not check the validTokenargs might end up to unwanted errors use with caution
   }
 
   public async remove(userId: string) {
@@ -48,21 +54,52 @@ export class TokenService extends ServiceModule {
 
   }
 
-  public async retrieveByUser(userId: string): Promise<TokenI> {
+  public passwordRequestThrottle(userId: string, test = false): Promise<TokenI> {
 
-    if (!this.isValidId(userId)) throw new Error('Invalid id provided');
+    return new Promise(async (resolve, reject) => {
 
-    const token = await TokenModel.findOne({ userId: userId, type: 'authorization' }).lean().exec();
+      let result: TokenI = await this.retrieveToken({
+        userId: userId, type: 'passwordReset'
+      });
 
-    if (!token) throw new Error('Token not found');
+      if (!result) {
 
-    return token;
+        result = await this.create(userId, 'passwordReset');
+
+        return resolve(result);
+
+      }
+
+      const today = Date.now(),
+        { counter, date: lastRequest } = result.requestThrottle,
+        diff = moment(today).diff(moment(lastRequest), 'day');
+
+      if (diff >= 1 || test) {
+
+        result = await this.updateToken(result._id.toString(),
+          { requestThrottle: { counter: 1, date: Date.now() } });
+
+        return resolve(result);
+
+      }
+
+      if (result.requestThrottle.counter > 3)
+        return reject(new Error("Reached maximum requests"));
+
+
+      result = await this.updateToken(result._id.toString(),
+        { requestThrottle: { date: lastRequest, counter: counter + 1 } });
+
+      resolve(result);
+
+
+    });
 
   }
 
-  public retrieveByToken(token: string, type: TokenType): any {
+  public retrieveToken(payload: any): Promise<TokenI> {
 
-    return TokenModel.findOne({ type: type, token: token });
+    return TokenModel.findOne(payload).lean().exec();
 
   }
 

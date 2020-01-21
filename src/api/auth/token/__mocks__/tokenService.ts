@@ -1,14 +1,20 @@
-import { TokenModel } from "../token.model";
+import { TokenModel, TokenI } from "../token.model";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export class TokenService {
 
-  public static token;
+  public static token: TokenI;
   public static userId;
 
   public async create(userId: string, type: string) {
 
     return { token: TokenService.token, userId: userId };
+
+  }
+
+  public updateToken(id: string, payload: any): Promise<TokenI> {
+
+    return Promise.resolve(TokenService.token);
 
   }
 
@@ -18,9 +24,9 @@ export class TokenService {
 
   }
 
-  public async retrieveByUser(userId: string) {
+  public passwordRequestThrottle(userId: string): Promise<TokenI> {
 
-    return TokenService.token;
+    return Promise.resolve(TokenService.token);
 
   }
 
@@ -36,9 +42,11 @@ export class TokenService {
 
   }
 
-  public async retrieveByToken(token: string, type: string) {
+  public async retrieveToken(payload: any) {
 
     if (!TokenService.token) return Promise.resolve(undefined);
+
+    const { token, type } = payload;
 
     const result = new TokenModel({
       token: token,

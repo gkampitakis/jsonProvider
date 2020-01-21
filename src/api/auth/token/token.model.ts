@@ -10,8 +10,10 @@ export interface TokenI extends Document {
   created: Date;
   type: TokenType;
   userId?: string;
-  email?: string;
-  requestedAt: Date;
+  requestThrottle: {
+    date: Date;
+    counter: number;
+  };
 };
 
 const TokenSchema = new Schema({
@@ -36,12 +38,15 @@ const TokenSchema = new Schema({
   userId: {
     type: String
   },
-  email: {
-    type: String
-  },
-  requestedAt: {
-    type: Date,
-    default: Date.now()
+  requestThrottle: {
+    date: {
+      type: Date,
+      default: Date.now()
+    },
+    counter: {
+      type: Number,
+      default: 1
+    }
   }
 });
 
