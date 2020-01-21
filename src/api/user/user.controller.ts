@@ -170,11 +170,15 @@ class UserController extends ControllerModule {
     try {
 
       const payload = {
-        token: req.query.token,
+        token: req.query.t,
         password: req.body.password
       };
 
       await this.userService.passwordReset(payload);
+
+      return res.status(200).json({
+        message: "Password Updated"
+      });
 
     } catch ({ error, status }) {
 

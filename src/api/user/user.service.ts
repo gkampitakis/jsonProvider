@@ -22,6 +22,8 @@ export class UserService extends ServiceModule {
 
       try {
 
+        delete payload.body.verified;
+
         const user: UserI = new UserModel(payload.body) as UserI;
 
         const { token } = await this.tokenService.create(
@@ -52,12 +54,13 @@ export class UserService extends ServiceModule {
 
       try {
 
-        token = await this.tokenService.retrieveVerificationToken(payload.token);
+        token = await this.tokenService
+          .retrieveToken({ token: payload.token, type: 'verification' });
 
         if (!token)
           return reject(this.errorObject('Token not found', 404));
 
-        const user: any = await this.verifyUser(token.userId);
+        const user: any = await this._updateUser({ _id: token.userId }, { verified: true });
 
         if (!user)
           return reject(this.errorObject('User not found', 404));
@@ -79,10 +82,92 @@ export class UserService extends ServiceModule {
 
   }
 
+  public passwordResetRequest(payload: { email: string }) {
+    //TEST: check it through postman for the verified
+    return new Promise(async (resolve, reject) => {
 
-  private verifyUser(id: string): Promise<any> {
+      try {
 
-    return UserModel.findByIdAndUpdate(id, { verified: true }).exec();
+        const { email } = payload;
+
+        const user: UserI = await UserModel.findOne({ email: email })
+          .lean()
+          .exec();
+
+        if (!user) return reject(this.errorObject('User not found', 404));
+
+        const result: TokenI = await this.tokenService.passwordRequestThrottle(user._id.toString());
+
+        await this.emailController.send(email, 'Password Reset', {
+          token: result.token
+        },
+          'changePassword'
+        );
+
+        resolve();
+
+      } catch (error) {
+
+        reject(this.errorObject(error.message, 500));
+
+      }
+
+    });
+
+  }
+
+  public passwordReset(payload: { token: string; password: string }) {
+    //TEST:check that the verified still works
+    return new Promise(async (resolve, reject) => {
+
+      let result: TokenI;
+
+      try {
+
+        const { token, password: newPassword } = payload;
+        result = await this.tokenService
+          .retrieveToken({ token: token, type: 'passwordReset' });
+
+        if (!result)
+          return reject(this.errorObject('Token not found', 404));
+
+        await this._updateUser({ _id: result.userId }, { password: newPassword });
+
+        resolve();
+
+      } catch (error) {
+
+        reject(this.errorObject(error.message, 500));
+
+      } finally {
+
+        if (result)
+          result.remove();//TEST: this works
+
+      }
+
+    });
+
+  }
+
+  private async _updateUser(filter: any, payload: any): Promise<any> {
+
+    let user = await UserModel.findById(filter).exec();
+
+    user = this.mergeUserChanges(user, payload);
+
+    return user.save();
+
+  }
+
+  private mergeUserChanges(oldUser: any, newUser: any) {
+
+    oldUser.username = newUser?.username ?? oldUser.username;
+    oldUser.email = newUser?.email ?? oldUser.email;
+    oldUser.password = newUser?.password ?? oldUser.password;
+    oldUser.verified = newUser?.verified ?? oldUser.verified;
+
+    return oldUser;
 
   }
 
@@ -160,14 +245,13 @@ export class UserService extends ServiceModule {
 
       try {
 
-        const doc: UserI = await UserModel.findById(user).exec() as UserI;
+        let doc: UserI = await UserModel.findById(user).exec() as UserI;
 
         if (!doc)//NOTE: if we end up here something has gone really bad
           return reject(this.errorObject("User not found", 404));
-
-        doc.username = body?.username || doc.username;
-        doc.email = body?.email || doc.email;//TODO: if update email again verify email for updating email
-        doc.password = body?.password || doc.password;
+        //TODO: if update email again verify email for updating email
+        //or maybe support array of emails or just ignore the update later
+        doc = this.mergeUserChanges(doc, body);
 
         await doc.save();
         resolve(this.stripPassword(doc));
@@ -181,8 +265,6 @@ export class UserService extends ServiceModule {
     });
 
   }
-
-  //TODO: reset password function
 
   public retrieveMe(payload: { user: string }): Promise<any> {
 

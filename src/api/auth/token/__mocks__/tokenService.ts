@@ -1,10 +1,18 @@
 import { TokenModel, TokenI } from "../token.model";
+import autoBind from 'auto-bind';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export class TokenService {
 
-  public static token: TokenI;
-  public static userId;
+  public static token: string;
+  public static userId: string;
+  public static type = 'authorization'
+
+  constructor() {
+
+    autoBind(this);
+
+  }
 
   public async create(userId: string, type: string) {
 
@@ -14,7 +22,11 @@ export class TokenService {
 
   public updateToken(id: string, payload: any): Promise<TokenI> {
 
-    return Promise.resolve(TokenService.token);
+    return Promise.resolve(this.tokenFactory({
+      token: TokenService.token,
+      type: TokenService.type,
+      userId: TokenService.userId
+    }));
 
   }
 
@@ -26,7 +38,11 @@ export class TokenService {
 
   public passwordRequestThrottle(userId: string): Promise<TokenI> {
 
-    return Promise.resolve(TokenService.token);
+    return Promise.resolve(this.tokenFactory({
+      token: TokenService.token,
+      type: TokenService.type,
+      userId: TokenService.userId
+    }));
 
   }
 
@@ -48,13 +64,19 @@ export class TokenService {
 
     const { token, type } = payload;
 
-    const result = new TokenModel({
+    const result = this.tokenFactory({
       token: token,
       type: type,
       userId: TokenService.userId
     });
 
     return Promise.resolve(result);
+
+  }
+
+  private tokenFactory(payload: any): TokenI {
+
+    return new TokenModel(payload) as TokenI;
 
   }
 

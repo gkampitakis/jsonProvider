@@ -21,7 +21,7 @@ export class UserService {
 
   }
 
-  public updateUser(payload: { user: string; body: any }): Promise<any> {
+  public updateUser(filter: any, payload: any): Promise<any> {
 
     return Promise.resolve();
 
