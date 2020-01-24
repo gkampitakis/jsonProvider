@@ -8,10 +8,10 @@ const controllerDI = Container.get(controller),
   userRouter: Router = Router();
 
 userRouter.get('/verify', controllerDI.verifyEmail);
+userRouter.post('/', controllerDI.create);
 
 userRouter.use(tokenController.prepareRequestUser);
 
-userRouter.post('/', controllerDI.create);
 userRouter.post('/password', controllerDI.passwordResetRequest);
 userRouter.put('/password', controllerDI.passwordReset);
 userRouter.get('/me', controllerDI.me);

@@ -74,7 +74,7 @@ export class UserService extends ServiceModule {
       } finally {
 
         if (token)
-          token.remove();
+          this.tokenService.removeToken({ _id: token._id });
 
       }
 
@@ -83,7 +83,7 @@ export class UserService extends ServiceModule {
   }
 
   public passwordResetRequest(payload: { email: string }) {
-    //TEST: check it through postman for the verified
+    //TEST: the date restriction on requests
     return new Promise(async (resolve, reject) => {
 
       try {
@@ -117,7 +117,7 @@ export class UserService extends ServiceModule {
   }
 
   public passwordReset(payload: { token: string; password: string }) {
-    //TEST:check that the verified still works
+
     return new Promise(async (resolve, reject) => {
 
       let result: TokenI;
@@ -142,7 +142,7 @@ export class UserService extends ServiceModule {
       } finally {
 
         if (result)
-          result.remove();//TEST: this works
+          this.tokenService.removeToken({ _id: result._id });
 
       }
 

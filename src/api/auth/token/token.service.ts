@@ -139,21 +139,42 @@ export class TokenService extends ServiceModule {
 
   }
 
-  public invalidateTokens(userId: string): Promise<any> {
+  public invalidateTokens(userId: string): Promise<any> {//TODO: write test about this
 
     return TokenModel.deleteMany({ userId: userId }).exec();
 
   }
 
+  public removeToken(filter: any): Promise<any> {
+
+    return TokenModel.remove(filter).exec();
+
+  }
+
   public async prepareRequestUser(req: Request, res: Response, next: Function) {
 
-    const token = tokenParser(req);
+    const token = tokenParser(req),
+      email = req.body.email;
 
-    if (!token) return next();
+    if (!token && !email) return next();
 
     try {
 
-      const user: UserI = await this.retrieveUser(token);
+      let user: UserI;
+
+      if (token)
+        user = await this.retrieveUser(token);
+      else
+        user = await UserModel.findOne({ email: email }).lean().exec();
+
+      if (!user) {
+
+        res.status(404).json({
+          message: "User not found",
+          status: 404
+        });
+
+      }
 
       if (!user.verified) {
 
