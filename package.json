@@ -1,6 +1,6 @@
 {
   "name": "jsonprovider",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Simple Server for storing and serving json files",
   "main": "index.js",
   "scripts": {
