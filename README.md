@@ -1,3 +1,13 @@
-# Backlog
+# Json Provider Backend
 
-- Add jest for testing suite
+## Usage
+
+## Dependencies
+
+## Future Work
+
+[Trello Board](https://trello.com/b/PkabRw7V/json-provider)
+
+## Author and Maintainer
+
+[Georgios Kampitakis](https://gkampitakis.github.io/)

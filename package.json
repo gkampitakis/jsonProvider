@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@gkampitakis/tslog": "^1.1.0",
+    "@gkampitakis/email-provider": "^1.1.0",
     "async": "^3.1.0",
     "auto-bind": "^4.0.0",
     "bluebird": "^3.7.1",
@@ -26,9 +27,6 @@
     "method-override": "^3.0.0",
     "moment": "^2.24.0",
     "mongoose": "^5.7.11",
-    "nodemailer": "^6.4.2",
-    "nodemailer-express-handlebars": "^3.1.0",
-    "nodemailer-sendgrid": "^1.0.3",
     "parse-bearer-token": "^1.0.1",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
@@ -50,7 +48,6 @@
     "@types/moment": "^2.13.0",
     "@types/mongoose": "^5.5.32",
     "@types/node": "^12.12.8",
-    "@types/nodemailer": "^6.4.0",
     "@types/validator": "^12.0.1",
     "@typescript-eslint/eslint-plugin": "^2.7.0",
     "@typescript-eslint/parser": "^2.7.0",
@@ -85,6 +82,10 @@
       "!src/**/theme.{ts,tsx}",
       "!src/**/index.{ts,tsx}",
       "!src/**/*.d.ts"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/data/"
     ]
   },
   "jestSonar": {

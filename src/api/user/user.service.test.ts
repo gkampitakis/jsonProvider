@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 import { UserService } from './user.service';
 import { UserI, UserModel } from './user.model';
 import { TokenService } from '../auth/token/token.service';
-import { TokenService as TokenFakeService } from '../auth/token/__mocks__/tokenService';
-import { EmailController as EmailFakeController } from '../communication/__mocks__/emailController';
+import { TokenService as TokenFakeService } from '../../__mocks__/tokenService';
+import { EmailProvider as EmailFakeProvider } from '../../__mocks__/emailProvider';
 import { JsonDoc } from '../jsonDocument/jsonDoc.model';
 import JsonDocService from '../jsonDocument/jsonDoc.service';
-import { EmailController } from '../communication/email/email.controller';
+import { EmailProvider } from '@gkampitakis/email-provider';
 
 let connection,
   tokenInvalidateSpy: jest.SpyInstance,
@@ -17,9 +17,9 @@ let connection,
   user: UserI;
 
 const tokenFakeService = new TokenFakeService(),
-  emailFakeController = new EmailFakeController();
+  emailFakeProvider = new EmailFakeProvider();
 Container.set(TokenService, tokenFakeService);
-Container.set(EmailController, emailFakeController);
+Container.set(EmailProvider, emailFakeProvider);
 
 const userService = Container.get(UserService);
 
@@ -36,7 +36,7 @@ describe('Create User', () => {
       useCreateIndex: true
     });
 
-    emailSendSpy = jest.spyOn(emailFakeController, 'send');
+    emailSendSpy = jest.spyOn(emailFakeProvider, 'send');
     tokenRetrieveSpy = jest.spyOn(tokenFakeService, 'retrieveToken');
     tokenPasswordRequest = jest.spyOn(tokenFakeService, 'passwordRequestThrottle');
 

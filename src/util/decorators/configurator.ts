@@ -1,4 +1,4 @@
-import environment from '../../config/environment/index';
+import environment from '../../config';
 import config from '../../config/config.json';
 import _ from 'lodash';
 

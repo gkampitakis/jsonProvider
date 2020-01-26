@@ -2,7 +2,7 @@ import Container from "typedi";
 import JsonDocService from "./jsonDoc.service";
 import mongoose from "mongoose";
 import { JsonDoc } from "./jsonDoc.model";
-import { UserService as FakeService } from "../user/__mocks__/userService";
+import { UserService as FakeService } from "../../__mocks__/userService";
 import { UserService } from "../user/user.service";
 
 const fakeService = new FakeService();

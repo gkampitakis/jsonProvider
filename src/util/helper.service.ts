@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import version from '../version.json';
+import version from './version.json';
 import { _Logger } from "./decorators/logger";
 import { Service } from "typedi";
 import "reflect-metadata";

@@ -5,19 +5,18 @@ let _path;
 
 switch (process.env.NODE_ENV) {
   case 'development':
-    _path = path.join(__dirname, '/../../../.env.development');
+    _path = path.join(process.cwd(), '/.env.development');
     break;
   case 'production':
-    _path = path.join(__dirname, '/../../../.env.production');
+    _path = path.join(process.cwd(), '/.env.production');
     break;
   default:
     process.env.NODE_ENV = 'development';
-    _path = path.join(__dirname, '/../../../.env.development');
+    _path = path.join(process.cwd(), '/.env.development');
     break;
 }
 
 dotenv.config({ path: _path });
-
 
 export default {
 

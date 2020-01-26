@@ -1,7 +1,9 @@
 {
   "communication": {
     "email": {
-      "supportedTemplates": ["changePassword", "verifyEmail"]
+      "supportedTemplates": ["changePassword", "verifyEmail"],
+      "templateFolderName": "emailViews",
+      "emailSender": "no-reply@jsonProvider.dev"
     }
   }
 }

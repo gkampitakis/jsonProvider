@@ -1,4 +1,4 @@
-import { TokenModel, TokenI } from "../token.model";
+import { TokenModel, TokenI } from "../api/auth/token/token.model";
 import autoBind from 'auto-bind';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -33,6 +33,12 @@ export class TokenService {
   public async remove(userId: string) {
 
     return;
+
+  }
+
+  public removeToken(filter: any): Promise<any> {
+
+    return Promise.resolve();
 
   }
 

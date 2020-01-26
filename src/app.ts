@@ -6,6 +6,7 @@ import { setupExpress } from './config/express';
 import { setupRoutes } from './routes';
 import { Configurator } from './util/decorators/configurator';
 import { Logger, _Logger } from './util/decorators/logger';
+import { EmailProvider } from '@gkampitakis/email-provider';
 
 export class App {
 
@@ -59,7 +60,17 @@ export class App {
 
   private setupGlobals() {
 
+    const { supportedTemplates, templateFolderName, emailSender } = this.config.communication.email;
+
     (mongoose as any).Promise = bluebird;
+    EmailProvider.setup({
+      sendGridApiKey: this.config.keys.sendgrid,
+      templatesFolder: templateFolderName,
+      sender: emailSender,
+      supportedEmailTypes: supportedTemplates
+    });
+
+    console.log(this.config.keys.sendgrid, templateFolderName, emailSender, supportedTemplates);
 
   }
 

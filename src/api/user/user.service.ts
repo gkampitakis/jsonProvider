@@ -2,7 +2,7 @@ import { UserI, UserModel } from "./user.model";
 import { TokenService } from "../auth/token/token.service";
 import { Service } from "typedi";
 import { ServiceModule } from "../interfaces/ServiceModule";
-import { EmailController } from "../communication/email/email.controller";
+import { EmailProvider } from '@gkampitakis/email-provider';
 import 'reflect-metadata';
 import { TokenI } from "../auth/token/token.model";
 
@@ -11,7 +11,7 @@ export class UserService extends ServiceModule {
 
   constructor(
     private tokenService: TokenService,
-    private emailController: EmailController
+    private emailProvider: EmailProvider
   ) {
     super();
   }
@@ -98,7 +98,7 @@ export class UserService extends ServiceModule {
 
         const result: TokenI = await this.tokenService.passwordRequestThrottle(user._id.toString());
 
-        await this.emailController.send(email, 'Password Reset', {
+        await this.emailProvider.send(email, 'Password Reset', {
           token: result.token
         },
           'changePassword'
@@ -390,7 +390,7 @@ export class UserService extends ServiceModule {
 
   private sendVerificationEmail(email: string, token: string): Promise<any> {
 
-    return this.emailController.send(email,
+    return this.emailProvider.send(email,
       'Please Verify your email', {
       token: token
     }, 'verifyEmail');
