@@ -1,13 +1,18 @@
-import { UserI, UserModel } from "./user.model";
-import { TokenService } from "../auth/token/token.service";
-import { Service } from "typedi";
-import { ServiceModule } from "../interfaces/ServiceModule";
+import { UserI, UserModel } from './user.model';
+import { TokenService } from '../auth/token/token.service';
+import { Service } from 'typedi';
+import { ServiceModule } from '../interfaces/ServiceModule';
 import { EmailProvider } from '@gkampitakis/email-provider';
 import 'reflect-metadata';
-import { TokenI } from "../auth/token/token.model";
+import { TokenI } from '../auth/token/token.model';
+import { Configurator } from '../../util/decorators/configurator';
 
 @Service()
 export class UserService extends ServiceModule {
+
+
+  @Configurator('communication')
+  private config;
 
   constructor(
     private tokenService: TokenService,
@@ -99,7 +104,7 @@ export class UserService extends ServiceModule {
         const result: TokenI = await this.tokenService.passwordRequestThrottle(user._id.toString());
 
         await this.emailProvider.send(email, 'Password Reset', {
-          token: result.token
+          link: `${this.config.communication.changePassUrl}${result.token}`
         },
           'changePassword'
         );
@@ -178,7 +183,7 @@ export class UserService extends ServiceModule {
       const { id } = payload;
 
       if (!this.isValidId(id))
-        return reject(this.errorObject("User not found", 404));
+        return reject(this.errorObject('User not found', 404));
 
       try {
 
@@ -188,7 +193,7 @@ export class UserService extends ServiceModule {
           .exec();
 
         if (!user)
-          return reject(this.errorObject("User not found", 404));
+          return reject(this.errorObject('User not found', 404));
 
         resolve(this.stripPassword(user));
 
@@ -209,14 +214,14 @@ export class UserService extends ServiceModule {
       const { user } = payload;
 
       if (!user)
-        return reject(this.errorObject("Need to be registered", 401));
+        return reject(this.errorObject('Need to be registered', 401));
 
       try {
 
         const doc: UserI = await UserModel.findById(user).exec() as UserI;
 
         if (!doc) //NOTE: if we end up here something has gone really bad
-          return reject(this.errorObject("User not found", 404));
+          return reject(this.errorObject('User not found', 404));
 
         await doc.remove();
 
@@ -241,14 +246,14 @@ export class UserService extends ServiceModule {
       const { user, body } = payload;
 
       if (!user)
-        return reject(this.errorObject("Need to be registered", 401));
+        return reject(this.errorObject('Need to be registered', 401));
 
       try {
 
         let doc: UserI = await UserModel.findById(user).exec() as UserI;
 
         if (!doc)//NOTE: if we end up here something has gone really bad
-          return reject(this.errorObject("User not found", 404));
+          return reject(this.errorObject('User not found', 404));
         //TODO: if update email again verify email for updating email
         //or maybe support array of emails or just ignore the update later
         doc = this.mergeUserChanges(doc, body);
@@ -273,7 +278,7 @@ export class UserService extends ServiceModule {
       const { user } = payload;
 
       if (!user)
-        return reject(this.errorObject("Need to be registered", 401));
+        return reject(this.errorObject('Need to be registered', 401));
 
       try {
 
@@ -283,7 +288,7 @@ export class UserService extends ServiceModule {
           .exec();
 
         if (!doc)//NOTE: if we end up here something has gone really bad
-          return reject(this.errorObject("User not found", 404));
+          return reject(this.errorObject('User not found', 404));
 
         resolve(this.stripPassword(doc));
 
@@ -310,7 +315,7 @@ export class UserService extends ServiceModule {
           const user: UserI = await UserModel.findById(id[i]).exec() as UserI;
 
           if (!user)
-            return reject(this.errorObject("User not found", 404));
+            return reject(this.errorObject('User not found', 404));
 
           const idx = user.documents.findIndex((document: any) => document.toString() === documentId);
 
@@ -352,7 +357,7 @@ export class UserService extends ServiceModule {
           const user: UserI = await UserModel.findById(id).exec() as UserI;
 
           if (!user)
-            return reject(this.errorObject("User not found", 404));
+            return reject(this.errorObject('User not found', 404));
 
           const idx = user.documents.findIndex((document: any) => document.toString() === documentId);
 
@@ -392,7 +397,7 @@ export class UserService extends ServiceModule {
 
     return this.emailProvider.send(email,
       'Please Verify your email', {
-      token: token
+      link: `${this.config.communication.verifyEmailUrl}${token}`
     }, 'verifyEmail');
 
   }

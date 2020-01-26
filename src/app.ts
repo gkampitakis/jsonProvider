@@ -70,8 +70,6 @@ export class App {
       supportedEmailTypes: supportedTemplates
     });
 
-    console.log(this.config.keys.sendgrid, templateFolderName, emailSender, supportedTemplates);
-
   }
 
   private startServer() {

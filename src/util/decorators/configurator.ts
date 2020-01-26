@@ -1,18 +1,14 @@
-import environment from '../../config';
-import config from '../../config/config.json';
-import _ from 'lodash';
+import configuration from '../../config';
 
 export function Configurator(...args: Array<string>) {
 
   return function (target: object, propertyKey: string) {
 
-    const configuration = _.merge(environment, config);
-
     if (!args.length) {
 
       target[propertyKey] = configuration;
       return;
-      
+
     }
 
     target[propertyKey] = {};

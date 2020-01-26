@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import *  as path from 'path';
+import config from '../config/config.json';
 
 let _path;
 
@@ -37,6 +38,11 @@ export default {
       useCreateIndex: true
     },
     uri: process.env.MONGODB_URI
+  },
+  communication: {
+    ...config.communication,
+    changePassUrl: process.env.CHANGE_PASS_EMAIL_URL,
+    verifyEmailUrl: process.env.VERIFY_EMAIL_URL
   },
   root: path.normalize(`${__dirname}/../../..`)
 };
