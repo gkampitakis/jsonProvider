@@ -168,7 +168,7 @@ describe('Create User', () => {
     expect(emailSendSpy).toHaveBeenNthCalledWith(1,
       payload.body.email,
       'Please Verify your email', {
-      token: '123456789'
+      "link": "http://localhost:5000/user/verify?t=123456789"
     }, 'verifyEmail');
 
   });
@@ -697,7 +697,7 @@ describe('When requesting for password request', () => {
     expect(emailSendSpy).toHaveBeenNthCalledWith(1,
       'test@gmail.com',
       'Password Reset',
-      { token: '123456789' },
+      { link: 'http://localhost:5000/version?t=123456789' },
       'changePassword');
 
   });
