@@ -10,5 +10,6 @@ const controllerDI = Container.get(controller),
 setup(UserModel);
 
 authRouter.post('/', controllerDI.authenticate);
+authRouter.delete('/', controllerDI.invalidateToken);
 
 export default authRouter;

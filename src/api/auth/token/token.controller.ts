@@ -6,14 +6,17 @@ import { TokenService } from "./token.service";
 import { UserI } from "../../user/user.model";
 import { Service } from "typedi";
 import autoBind from 'auto-bind';
+import { ControllerModule } from "../../interfaces/ControllerModule";
 
 @Service()
-class TokenController {
+class TokenController extends ControllerModule {
 
   @Logger('TokenController')
   private logger: _Logger
 
   constructor(private tokenService: TokenService) {
+
+    super();
 
     autoBind(this);
 
@@ -46,6 +49,28 @@ class TokenController {
       }
 
     })(req, res);
+
+  }
+
+  public async invalidateToken(req: Request, res: Response) {
+
+    try {
+
+      const { t: token } = req.query;
+
+      if (!token) return this.handleError(res, new Error('Token not provided'), 400);
+
+      await this.tokenService.removeToken({ token });
+      res.status(200).json({
+        message: 'Removed successfully'
+      });
+
+    } catch ({ error, status }) {
+
+      this.logger.error(error.message);
+      this.handleError(res, error, status);
+
+    }
 
   }
 
