@@ -88,7 +88,7 @@ export class UserService extends ServiceModule {
   }
 
   public passwordResetRequest(payload: { email: string }) {
-    //TEST: the date restriction on requests
+
     return new Promise(async (resolve, reject) => {
 
       try {
@@ -299,6 +299,25 @@ export class UserService extends ServiceModule {
       }
 
     });
+
+  }
+
+  public usernameExists(payload: { username: string }): Promise<any> {
+
+    const { username } = payload;
+
+    return UserModel.findOne({ username })
+      .lean()
+      .exec()
+      .then((data) => {
+
+
+        if (data)
+          return { message: 'User Exists', status: 200 };
+
+        return { message: 'User Does Not Exist', status: 200 };
+
+      });
 
   }
 

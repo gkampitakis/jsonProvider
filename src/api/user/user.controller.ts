@@ -38,6 +38,26 @@ class UserController extends ControllerModule {
 
   }
 
+  public async usernameExists(req: Request, res: Response) {
+
+    try {
+
+      const payload = {
+        username: req.body.username
+      };
+
+      const result = await this.userService.usernameExists(payload);
+
+      return res.status(200).json(result);
+
+    } catch ({ error, status }) {
+
+      this.handleError(res, error);
+
+    }
+
+  }
+
   public async retrieve(req: Request, res: Response) {
     //TODO: this needs to see only the viewable fields
     try {
