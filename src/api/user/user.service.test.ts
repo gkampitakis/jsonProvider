@@ -168,7 +168,7 @@ describe('Create User', () => {
     expect(emailSendSpy).toHaveBeenNthCalledWith(1,
       payload.body.email,
       'Please Verify your email', {
-      "link": "http://localhost:5000/user/verify?t=123456789"
+      "link": "http://localhost:3000/verify?t=123456789"
     }, 'verifyEmail');
 
   });
@@ -697,7 +697,7 @@ describe('When requesting for password request', () => {
     expect(emailSendSpy).toHaveBeenNthCalledWith(1,
       'test@gmail.com',
       'Password Reset',
-      { link: 'http://localhost:5000/version?t=123456789' },
+      { link: 'http://localhost:3000/password/new?t=123456789' },
       'changePassword');
 
   });
@@ -760,6 +760,71 @@ describe('When resetting password', () => {
     const result = userService.passwordReset({ token: '123456789', password: '00000' });
 
     expect(result).resolves;
+
+  });
+
+});
+
+describe("when search if a user exists", () => {
+
+  beforeAll(async () => {
+
+    const payload = {
+      body: {
+        username: 'test',
+        email: 'test@gmail.com',
+        password: '12345'
+      }
+    };
+
+    TokenFakeService.token = '123456789';
+
+    user = await userService.createUser(payload);
+
+  });
+
+  afterAll(async () => {
+
+    await UserModel.deleteMany({});
+
+  });
+
+  it("should return user exists if user exists", () => {
+
+    const payload = {
+      id: 'test',
+      field: 'username'
+    };
+
+    expect(userService.userExists(payload))
+      .resolves
+      .toEqual({ message: 'User Exists', status: 200 });
+
+  });
+
+  it("should return user does not exist if user doesn't exists", () => {
+
+    const payload = {
+      id: 'notExistentUser',
+      field: 'username'
+    };
+
+    expect(userService.userExists(payload))
+      .resolves
+      .toEqual({ message: 'User Does Not Exist', status: 400 });
+
+  });
+
+  it("should return user doesn't exist if query with wrong field", () => {
+
+    const payload = {
+      id: 'test',
+      field: 'notExistentField'
+    };
+
+    expect(userService.userExists(payload))
+      .resolves
+      .toEqual({ message: 'User Does Not Exist', status: 400 });
 
   });
 
