@@ -302,11 +302,14 @@ export class UserService extends ServiceModule {
 
   }
 
-  public usernameExists(payload: { username: string }): Promise<any> {
+  public userExists(payload: { id: string; field: string }): Promise<any> {
+    //TODO: write test for this
+    const { id, field } = payload,
+      query = {};
 
-    const { username } = payload;
+    query[field] = id;
 
-    return UserModel.findOne({ username })
+    return UserModel.findOne(query)
       .lean()
       .exec()
       .then((data) => {
@@ -315,7 +318,7 @@ export class UserService extends ServiceModule {
         if (data)
           return { message: 'User Exists', status: 200 };
 
-        return { message: 'User Does Not Exist', status: 200 };
+        return { message: 'User Does Not Exist', status: 400 };
 
       });
 

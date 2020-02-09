@@ -7,7 +7,7 @@ const controllerDI = Container.get(controller),
   tokenController: TokenService = new TokenService(),
   userRouter: Router = Router();
 
-userRouter.post('/exists/', controllerDI.usernameExists);
+userRouter.post('/exists/:field', controllerDI.userExists);
 userRouter.get('/verify', controllerDI.verifyEmail);
 userRouter.post('/', controllerDI.create);
 

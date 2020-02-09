@@ -38,15 +38,16 @@ class UserController extends ControllerModule {
 
   }
 
-  public async usernameExists(req: Request, res: Response) {
+  public async userExists(req: Request, res: Response) {
 
     try {
 
       const payload = {
-        username: req.body.username
+        id: req.body.id,
+        field: req.params.field
       };
 
-      const result = await this.userService.usernameExists(payload);
+      const result = await this.userService.userExists(payload);
 
       return res.status(200).json(result);
 
