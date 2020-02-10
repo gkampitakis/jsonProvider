@@ -147,7 +147,7 @@ describe('Retrieve Verification Token', () => {
 
 });
 
-describe('Password Request Token Throttle', () => {
+describe('Password Create Throttled Token', () => {
 
 
   afterEach(async () => {
@@ -158,7 +158,7 @@ describe('Password Request Token Throttle', () => {
 
   it('should create a token for password request', async () => {
 
-    await tokenService.passwordRequestThrottle(user_Id);
+    await tokenService.createThrottledToken(user_Id, 'passwordReset');
 
     result = await tokenService.retrieveToken({ userId: user_Id });
 
@@ -171,9 +171,9 @@ describe('Password Request Token Throttle', () => {
 
   it('should return same token with updated counter', async () => {
 
-    const req1 = await tokenService.passwordRequestThrottle(user_Id),
-      req2 = await tokenService.passwordRequestThrottle(user_Id),
-      req3 = await tokenService.passwordRequestThrottle(user_Id);
+    const req1 = await tokenService.createThrottledToken(user_Id, 'verification'),
+      req2 = await tokenService.createThrottledToken(user_Id, 'verification'),
+      req3 = await tokenService.createThrottledToken(user_Id, 'verification');
 
     expect(req1.token).toBe(req2.token);
     expect(req2.token).toBe(req3.token);
@@ -184,10 +184,10 @@ describe('Password Request Token Throttle', () => {
 
   it('should reset the counter if date changed', async () => {
 
-    await tokenService.passwordRequestThrottle(user_Id);
-    await tokenService.passwordRequestThrottle(user_Id);
-    await tokenService.passwordRequestThrottle(user_Id);
-    const req = await tokenService.passwordRequestThrottle(user_Id, true);
+    await tokenService.createThrottledToken(user_Id, 'passwordReset');
+    await tokenService.createThrottledToken(user_Id, 'passwordReset');
+    await tokenService.createThrottledToken(user_Id, 'passwordReset');
+    const req = await tokenService.createThrottledToken(user_Id, 'passwordReset', true);
 
     expect(req.requestThrottle.counter).toBe(1);
 
@@ -197,14 +197,14 @@ describe('Password Request Token Throttle', () => {
 
     try {
 
-      await tokenService.passwordRequestThrottle(user_Id);
-      await tokenService.passwordRequestThrottle(user_Id);
-      await tokenService.passwordRequestThrottle(user_Id);
-      await tokenService.passwordRequestThrottle(user_Id);
+      await tokenService.createThrottledToken(user_Id, 'passwordReset');
+      await tokenService.createThrottledToken(user_Id, 'passwordReset');
+      await tokenService.createThrottledToken(user_Id, 'passwordReset');
+      await tokenService.createThrottledToken(user_Id, 'passwordReset');
 
     } catch (error) {
 
-      expect(error.message).toBe('Reached maximum requests');
+      expect(error.message).toBe('Reached maximum requests for today');
 
     }
 

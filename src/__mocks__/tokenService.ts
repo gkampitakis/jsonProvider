@@ -42,7 +42,7 @@ export class TokenService {
 
   }
 
-  public passwordRequestThrottle(userId: string): Promise<TokenI> {
+  public createThrottledToken(userId: string, type: string): Promise<TokenI> {
 
     return Promise.resolve(this.tokenFactory({
       token: TokenService.token,

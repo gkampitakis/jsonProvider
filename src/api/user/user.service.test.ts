@@ -38,7 +38,7 @@ describe('Create User', () => {
 
     emailSendSpy = jest.spyOn(emailFakeProvider, 'send');
     tokenRetrieveSpy = jest.spyOn(tokenFakeService, 'retrieveToken');
-    tokenPasswordRequest = jest.spyOn(tokenFakeService, 'passwordRequestThrottle');
+    tokenPasswordRequest = jest.spyOn(tokenFakeService, 'createThrottledToken');
 
     TokenFakeService.token = '123456789';
 
@@ -165,11 +165,6 @@ describe('Create User', () => {
 
     expect(user.username).toEqual(payload.body.username);
     expect(user.email).toEqual(payload.body.email);
-    expect(emailSendSpy).toHaveBeenNthCalledWith(1,
-      payload.body.email,
-      'Please Verify your email', {
-      "link": "http://localhost:3000/verify?t=123456789"
-    }, 'verifyEmail');
 
   });
 
@@ -693,7 +688,7 @@ describe('When requesting for password request', () => {
 
     await userService.passwordResetRequest({ email: 'test@gmail.com' });
 
-    expect(tokenPasswordRequest).toHaveBeenNthCalledWith(1, user._id.toString());
+    expect(tokenPasswordRequest).toHaveBeenNthCalledWith(1, user._id.toString(), 'passwordReset');
     expect(emailSendSpy).toHaveBeenNthCalledWith(1,
       'test@gmail.com',
       'Password Reset',
@@ -825,6 +820,59 @@ describe("when search if a user exists", () => {
     expect(userService.userExists(payload))
       .resolves
       .toEqual({ message: 'User Does Not Exist', status: 400 });
+
+  });
+
+});
+
+describe("when request for new verification  email", () => {
+
+  beforeAll(async () => {
+
+    const payload = {
+      body: {
+        username: 'test',
+        email: 'test@gmail.com',
+        password: '12345'
+      }
+    };
+
+    TokenFakeService.token = '123456789';
+
+    user = await userService.createUser(payload);
+
+  });
+
+  afterAll(async () => {
+
+    await UserModel.deleteMany({});
+
+  });
+
+  it("should call the createThrottledToken and call email send", () => {
+
+    expect(userService.sendVerificationEmail({ email: 'test@gmail.com' }))
+      .resolves;
+    expect(emailSendSpy).toHaveBeenNthCalledWith(1,
+      'test@gmail.com',
+      'Please Verify your email', {
+      "link": "http://localhost:3000/verify?t=123456789"
+    }, 'verifyEmail');
+
+  });
+
+  it("should throw error if user doesn't exist with this email", async () => {
+
+    try {
+
+      await userService.sendVerificationEmail({ email: 'notExistent@gmail.com' });
+
+    } catch ({ error, status }) {
+
+      expect(status).toEqual(404);
+      expect(error.message).toEqual('User not found');
+
+    }
 
   });
 

@@ -38,6 +38,29 @@ class UserController extends ControllerModule {
 
   }
 
+  public async sendVerificationEmail(req: Request, res: Response) {
+
+    const payload = {
+      email: req.query.e
+    };
+
+    try {
+
+      await this.userService.sendVerificationEmail(payload);
+      res.status(200).json({
+        message: 'Email was send successfully',
+        status: 200
+      });
+
+    } catch ({ error, status }) {
+
+      this.logger.error(error.message);
+      this.handleError(res, error, status);
+
+    }
+
+  }
+
   public async userExists(req: Request, res: Response) {
 
     try {

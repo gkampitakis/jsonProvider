@@ -31,15 +31,11 @@ export class UserService extends ServiceModule {
 
         const user: UserI = new UserModel(payload.body) as UserI;
 
-        const { token } = await this.tokenService.create(
-          user._id.toString(),
-          'verification');
-
         const doc = await user.save();
 
         resolve(this.stripPassword(doc.toObject()));
 
-        this.sendVerificationEmail(user.email, token);
+        await this.sendVerificationEmail({ email: user.email, userId: user._id.toString() });
 
       } catch (error) {
 
@@ -101,7 +97,7 @@ export class UserService extends ServiceModule {
 
         if (!user) return reject(this.errorObject('User not found', 404));
 
-        const result: TokenI = await this.tokenService.passwordRequestThrottle(user._id.toString());
+        const result: TokenI = await this.tokenService.createThrottledToken(user._id.toString(), 'passwordReset');
 
         await this.emailProvider.send(email, 'Password Reset', {
           link: `${this.config.communication.changePassUrl}${result.token}`
@@ -303,7 +299,7 @@ export class UserService extends ServiceModule {
   }
 
   public userExists(payload: { id: string; field: string }): Promise<any> {
-    //TODO: write test for this
+
     const { id, field } = payload,
       query = {};
 
@@ -415,12 +411,45 @@ export class UserService extends ServiceModule {
 
   }
 
-  private sendVerificationEmail(email: string, token: string): Promise<any> {
+  public sendVerificationEmail(payload: { email: string; userId?: string }): Promise<any> {
 
-    return this.emailProvider.send(email,
-      'Please Verify your email', {
-      link: `${this.config.communication.verifyEmailUrl}${token}`
-    }, 'verifyEmail');
+    return new Promise(async (resolve, reject) => {
+
+      const { email } = payload;
+      let { userId } = payload;
+
+      try {
+
+        if (!userId) {
+
+          const user: UserI = await UserModel.findOne({ email: email }).lean().exec();
+
+          if (!user)
+            return reject(this.errorObject('User not found', 404));
+
+          if (user.verified)
+            return reject(this.errorObject('User already verified', 400));
+
+          userId = user._id.toString();
+
+        }
+
+        const token = await this.tokenService.createThrottledToken(userId, 'verification');
+
+        await this.emailProvider.send(email,
+          'Please Verify your email', {
+          link: `${this.config.communication.verifyEmailUrl}${token.token}`
+        }, 'verifyEmail');
+
+        resolve();
+
+      } catch (error) {
+
+        reject({ error: error });
+
+      }
+
+    });
 
   }
 

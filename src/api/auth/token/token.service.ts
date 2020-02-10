@@ -54,17 +54,18 @@ export class TokenService extends ServiceModule {
 
   }
 
-  public passwordRequestThrottle(userId: string, test = false): Promise<TokenI> {
+  public createThrottledToken(userId: string, type: TokenType, test = false): Promise<TokenI> {
 
     return new Promise(async (resolve, reject) => {
 
       let result: TokenI = await this.retrieveToken({
-        userId: userId, type: 'passwordReset'
+        userId: userId,
+        type
       });
 
       if (!result) {
 
-        result = await this.create(userId, 'passwordReset');
+        result = await this.create(userId, type);
 
         return resolve(result);
 
@@ -84,7 +85,7 @@ export class TokenService extends ServiceModule {
       }
 
       if (result.requestThrottle.counter > 3)
-        return reject(new Error("Reached maximum requests"));
+        return reject(new Error("Reached maximum requests for today"));
 
 
       result = await this.updateToken(result._id.toString(),

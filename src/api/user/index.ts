@@ -10,6 +10,7 @@ const controllerDI = Container.get(controller),
 userRouter.post('/exists/:field', controllerDI.userExists);
 userRouter.get('/verify', controllerDI.verifyEmail);
 userRouter.post('/', controllerDI.create);
+userRouter.get('/resend/verify', controllerDI.sendVerificationEmail);
 
 userRouter.use(tokenController.prepareRequestUser);
 
