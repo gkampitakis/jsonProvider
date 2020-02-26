@@ -82,26 +82,6 @@ class UserController extends ControllerModule {
 
   }
 
-  public async retrieve(req: Request, res: Response) {
-    //TODO: this needs to see only the viewable fields
-    try {
-
-      const payload = {
-        id: req.params.id
-      };
-
-      const result = await this.userService.retrieveUser(payload);
-
-      return res.status(200).json(result);
-
-    } catch ({ error, status }) {
-
-      this.handleError(res, error);
-
-    }
-
-  }
-
   public async verifyEmail(req: Request, res: Response) {
 
     try {

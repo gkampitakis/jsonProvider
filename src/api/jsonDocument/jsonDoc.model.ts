@@ -15,10 +15,10 @@ export enum privacy {
 export interface JsonDoc extends Document {
   privacy: privacy;
   _schema: {};
-  members: [{
+  members: {
     userId: string;
     access: access;
-  }];
+  }[];
 }
 
 const authorizationSchema = new Schema({

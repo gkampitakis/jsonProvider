@@ -6,10 +6,10 @@ import { EmailProvider } from '@gkampitakis/email-provider';
 import 'reflect-metadata';
 import { TokenI } from '../auth/token/token.model';
 import { Configurator } from '../../util/decorators/configurator';
+import { JsonDoc, JsonDocModel } from "../jsonDocument/jsonDoc.model";
 
 @Service()
 export class UserService extends ServiceModule {
-
 
   @Configurator('communication')
   private config;
@@ -204,7 +204,7 @@ export class UserService extends ServiceModule {
   }
 
   public removeUser(payload: { user: string }): Promise<any> {
-
+    //TODO: write tests
     return new Promise(async (resolve, reject) => {
 
       const { user } = payload;
@@ -219,9 +219,13 @@ export class UserService extends ServiceModule {
         if (!doc) //NOTE: if we end up here something has gone really bad
           return reject(this.errorObject('User not found', 404));
 
+        const documents = [...doc.documents];
+
         await doc.remove();
 
         this.tokenService.invalidateTokens(doc._id);
+
+        this.handleDanglingJson({ documents, user });
 
         resolve();
 
@@ -450,6 +454,55 @@ export class UserService extends ServiceModule {
       }
 
     });
+
+  }
+
+  private handleDanglingJson(payload: { documents: string[]; user: string }): Promise<any> {
+
+    //TODO: write tests 
+
+    const promises = [],
+      { documents, user } = payload;
+
+    documents.forEach((docId) => {
+
+      const promise = new Promise(async (resolve, reject) => {
+
+        try {
+
+          const doc: JsonDoc = await JsonDocModel.findById(docId).exec() as JsonDoc;
+
+          const idx = doc.members.findIndex((member) => member.userId.toString() === user);
+
+          if (idx === -1)
+            return reject(this.errorObject("User not found", 404));
+
+          doc.members.splice(idx, 1);
+
+          if (doc.members.length === 0) {
+
+            await doc.remove();
+            return resolve();
+
+          }
+
+          await doc.save();
+          return resolve();
+
+        } catch {}
+        finally {
+
+          resolve();
+
+        }
+
+      });
+
+      promises.push(promise);
+
+    });
+
+    return Promise.all(promises);
 
   }
 

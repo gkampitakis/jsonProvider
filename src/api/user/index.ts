@@ -17,10 +17,7 @@ userRouter.use(tokenController.prepareRequestUser);
 userRouter.post('/password', controllerDI.passwordResetRequest);
 userRouter.put('/password', controllerDI.passwordReset);
 userRouter.get('/me', controllerDI.me);
-userRouter.get('/:id', controllerDI.retrieve);
-//FIXME: return only visible data
 userRouter.put('/', controllerDI.update);
 userRouter.delete('/', controllerDI.remove);
-
 
 export default userRouter;
