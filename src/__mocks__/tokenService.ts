@@ -1,5 +1,4 @@
 import { TokenModel, TokenI } from "../api/auth/token/token.model";
-import autoBind from 'auto-bind';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export class TokenService {
@@ -7,12 +6,6 @@ export class TokenService {
   public static token: string;
   public static userId: string;
   public static type = 'authorization'
-
-  constructor() {
-
-    autoBind(this);
-
-  }
 
   public async create(userId: string, type: string) {
 

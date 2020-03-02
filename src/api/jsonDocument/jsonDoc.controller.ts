@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { _Logger, Logger } from "../../util/decorators/logger";
 import { Service } from 'typedi';
 import JsonDocService from "./jsonDoc.service";
-import autoBind from 'auto-bind';
 import _ from 'lodash';
 import { ControllerModule } from "../interfaces/ControllerModule";
 
@@ -17,7 +16,6 @@ class JsonDocController extends ControllerModule {
   ) {
 
     super();
-    autoBind(this);
 
   }
 

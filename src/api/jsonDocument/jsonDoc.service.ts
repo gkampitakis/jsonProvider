@@ -4,7 +4,6 @@ import { Service } from "typedi";
 import _ from 'lodash';
 import "reflect-metadata";
 import { ServiceModule } from "../interfaces/ServiceModule";
-import autoBind from "auto-bind";
 
 @Service()
 class JsonDocService extends ServiceModule {
@@ -14,7 +13,6 @@ class JsonDocService extends ServiceModule {
   ) {
 
     super();
-    autoBind(this);
 
   }
 

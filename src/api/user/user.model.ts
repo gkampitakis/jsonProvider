@@ -106,7 +106,8 @@ const validatePresenceOf = (value) => {
  */
 userSchema.pre<UserI>('save', function (next) {
   // Handle new/update passwords
-  if (!this.isModified('password')) {
+  if (!this.isModified('password')) {//NOTE: Here we have information that this refers to document
+    //and has a method isModified
 
     return next();
 

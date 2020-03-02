@@ -2,7 +2,6 @@ import { TokenModel, TokenType, TokenI } from './token.model';
 import { Request, Response } from 'express';
 import tokenParser from 'parse-bearer-token';
 import crypto from 'crypto';
-import autoBind from "auto-bind";
 import { ServiceModule } from "../../interfaces/ServiceModule";
 import { Service } from "typedi";
 import { UserI, UserModel } from "../../user/user.model";
@@ -10,14 +9,6 @@ import moment from 'moment';
 
 @Service()
 export class TokenService extends ServiceModule {
-
-  constructor() {
-
-    super();
-
-    autoBind(this);
-
-  }
 
   public async create(userId: string, type: TokenType) {
 
