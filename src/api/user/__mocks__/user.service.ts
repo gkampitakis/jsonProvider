@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 export class UserService {
 
   public createUser(payload: { body: any }): Promise<any> {

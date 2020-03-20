@@ -25,7 +25,7 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": false,
     // "strict": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "removeComments": true, /* Do not emit comments to output. */
     // "noEmit": true,                        /* Do not emit outputs. */
     // "importHelpers": true,                 /* Import emit helpers from 'tslib'. */
@@ -61,5 +61,8 @@
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
-  }
+  },
+  "exclude": [
+      "**/*.spec.ts"
+  ]
 }
