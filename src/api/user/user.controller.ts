@@ -1,20 +1,13 @@
 import { Request, Response } from 'express';
 import { _Logger, Logger } from "../../util/decorators/logger";
 import { UserService } from "./user.service";
-import { Service } from "typedi";
 import { ControllerModule } from "../interfaces/ControllerModule";
 
-@Service()
 class UserController extends ControllerModule {
 
   @Logger('UserController')
-  private logger: _Logger
-
-  constructor(private userService: UserService) {
-
-    super();
-
-  }
+  private logger: _Logger;
+  private userService = new UserService();
 
   public async create(req: Request, res: Response) {
 

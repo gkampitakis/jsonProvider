@@ -1,25 +1,17 @@
 import { UserI, UserModel } from './user.model';
 import { TokenService } from '../auth/token/token.service';
-import { Service } from 'typedi';
 import { ServiceModule } from '../interfaces/ServiceModule';
 import { EmailProvider } from '@gkampitakis/email-provider';
-import 'reflect-metadata';
 import { TokenI } from '../auth/token/token.model';
 import { Configurator } from '../../util/decorators/configurator';
 import { JsonDoc, JsonDocModel } from "../jsonDocument/jsonDoc.model";
 
-@Service()
 export class UserService extends ServiceModule {
 
   @Configurator('communication')
   private config;
-
-  constructor(
-    private tokenService: TokenService,
-    private emailProvider: EmailProvider
-  ) {
-    super();
-  }
+  private tokenService = new TokenService();
+  private emailProvider = new EmailProvider();
 
   public createUser(payload: { body: any }): Promise<any> {
 
@@ -60,7 +52,7 @@ export class UserService extends ServiceModule {
 
         if (!token)
           return reject(this.errorObject('Token not found', 404));
-
+        
         const user: any = await this._updateUser({ _id: token.userId }, { verified: true });
 
         if (!user)
@@ -346,7 +338,6 @@ export class UserService extends ServiceModule {
           user.documents.push(documentId);
 
           await user.save();
-
 
           resolve();
 

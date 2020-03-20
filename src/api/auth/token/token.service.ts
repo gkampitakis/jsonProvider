@@ -3,11 +3,9 @@ import { Request, Response } from 'express';
 import tokenParser from 'parse-bearer-token';
 import crypto from 'crypto';
 import { ServiceModule } from "../../interfaces/ServiceModule";
-import { Service } from "typedi";
 import { UserI, UserModel } from "../../user/user.model";
 import moment from 'moment';
 
-@Service()
 export class TokenService extends ServiceModule {
 
   public async create(userId: string, type: TokenType) {

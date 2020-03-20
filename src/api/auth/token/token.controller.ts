@@ -4,19 +4,14 @@ import passport from 'passport';
 import { TokenI } from '.././token/token.model';
 import { TokenService } from './token.service';
 import { UserI } from '../../user/user.model';
-import { Service } from 'typedi'; //TODO: then this
 import { ControllerModule } from '../../interfaces/ControllerModule';
 
 //TODO: then remove tests and rewrite them with the mongodriver
 
-@Service()
 class TokenController extends ControllerModule {
 	@Logger('TokenController')
-	private logger: _Logger;
-
-	constructor(private tokenService: TokenService) {
-		super();
-	}
+    private logger: _Logger;
+    private tokenService = new TokenService();
 
 	public authenticate(req: Request, res: Response) {
 		passport.authenticate(
