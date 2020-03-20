@@ -1,5 +1,5 @@
-import { App } from './app';
+import { Server } from './server';
 
-const application = new App();
+const server = new Server();
 
-export { application };
+export { server };

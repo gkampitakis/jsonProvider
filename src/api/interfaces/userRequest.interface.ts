@@ -1,5 +1,5 @@
 interface UserRequest extends Request {
-  user?: string;
-};
+	user?: string;
+}
 
 export default UserRequest;

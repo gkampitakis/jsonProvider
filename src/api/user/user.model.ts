@@ -1,148 +1,129 @@
 import { Schema, model, Document } from 'mongoose';
 import validator from 'validator';
 import crypto from 'crypto';
-import { JsonDocModel } from "../jsonDocument/jsonDoc.model";
+import { JsonDocModel } from '../jsonDocument/jsonDoc.model';
 
 export interface UserI extends Document {
-  _id: string;
-  username: string;
-  email: string;
-  password: string;
-  salt: string;
-  verified: boolean;
-  documents: Array<any>;
-  authenticate(password: string, callback?: Function): Function | boolean;
-  makeSalt(number, callback): Function;
-  encryptPassword(pass, callback): Function;
-};
+	_id: string;
+	username: string;
+	email: string;
+	password: string;
+	salt: string;
+	verified: boolean;
+	documents: Array<any>;
+	authenticate(password: string, callback?: Function): Function | boolean;
+	makeSalt(number, callback): Function;
+	encryptPassword(pass, callback): Function;
+}
 
 const userSchema = new Schema({
-  username: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  salt: {
-    type: String
-  },
-  verified: {
-    type: Boolean,
-    default: false
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now()
-  },
-  documents: {
-    type: [{ type: Schema.Types.ObjectId, ref: JsonDocModel }],
-    default: []
-  }
+	username: {
+		type: String,
+		required: true
+	},
+	email: {
+		type: String,
+		required: true,
+		unique: true
+	},
+	password: {
+		type: String,
+		required: true
+	},
+	salt: {
+		type: String
+	},
+	verified: {
+		type: Boolean,
+		default: false
+	},
+	createdAt: {
+		type: Date,
+		default: Date.now()
+	},
+	documents: {
+		type: [{ type: Schema.Types.ObjectId, ref: JsonDocModel }],
+		default: []
+	}
 });
 
 /**
  * Validations
  */
 userSchema
-  .path('email')
-  .validate(function (email: string) {
+	.path('email')
+	.validate(function(email: string) {
+		return validator.isEmail(email);
+	})
+	.validate(function(value) {
+		return this.constructor
+			.findOne({ email: value })
+			.exec()
+			.then(user => {
+				if (user && this.id !== user.id) {
+					return false;
+				}
 
-    return validator.isEmail(email);
+				return true;
+			})
+			.catch(err => {
+				throw err;
+			});
+	}, 'The specified email address is already in use');
 
-  })
-  .validate(function (value) {
+userSchema.path('username').validate(function(value) {
+	return this.constructor
+		.findOne({ username: value })
+		.exec()
+		.then(user => {
+			if (user && this.id !== user.id) {
+				return false;
+			}
 
-    return this.constructor.findOne({ email: value }).exec()
-      .then(user => {
+			return true;
+		})
+		.catch(err => {
+			throw err;
+		});
+}, 'The specified username is already in use');
 
-        if (user && this.id !== user.id) {
-
-          return false;
-
-        }
-
-        return true;
-
-      })
-      .catch(err => { throw err; });
-
-  }, 'The specified email address is already in use');
-
-userSchema
-  .path('username')
-  .validate(function (value) {
-    return this.constructor.findOne({ username: value }).exec()
-      .then(user => {
-
-        if (user && this.id !== user.id) {
-
-          return false;
-
-        }
-
-        return true;
-
-      })
-      .catch((err) => { throw err; });
-  }, 'The specified username is already in use');
-
-
-const validatePresenceOf = (value) => {
-
-  return value && value.length;
-
+const validatePresenceOf = value => {
+	return value && value.length;
 };
-
 
 /**
  * Pre-save hook
  */
-userSchema.pre<UserI>('save', function (next) {
-  // Handle new/update passwords
-  if (!this.isModified('password')) {//NOTE: Here we have information that this refers to document
-    //and has a method isModified
+userSchema.pre<UserI>('save', function(next) {
+	// Handle new/update passwords
+	if (!this.isModified('password')) {
+		//NOTE: Here we have information that this refers to document
+		//and has a method isModified
 
-    return next();
+		return next();
+	}
 
-  }
+	if (!validatePresenceOf(this.password)) {
+		return next(new Error('Invalid password'));
+	}
 
-  if (!validatePresenceOf(this.password)) {
+	// Make salt with a callback
+	this.makeSalt(16, (saltErr, salt) => {
+		if (saltErr) {
+			return next(saltErr);
+		}
 
-    return next(new Error('Invalid password'));
+		this.salt = salt;
 
-  }
+		this.encryptPassword(this.password, (encryptErr, hashedPassword) => {
+			if (encryptErr) {
+				return next(encryptErr);
+			}
 
-  // Make salt with a callback
-  this.makeSalt(16, (saltErr, salt) => {
-
-    if (saltErr) {
-
-      return next(saltErr);
-
-    }
-
-    this.salt = salt;
-
-    this.encryptPassword(this.password, (encryptErr, hashedPassword) => {
-
-      if (encryptErr) {
-
-        return next(encryptErr);
-
-      }
-
-      this.password = hashedPassword;
-      return next();
-
-    });
-  });
+			this.password = hashedPassword;
+			return next();
+		});
+	});
 });
 
 /**
@@ -150,87 +131,58 @@ userSchema.pre<UserI>('save', function (next) {
  */
 
 userSchema.methods = {
-  authenticate(password: string, callback?: Function) {
+	authenticate(password: string, callback?: Function) {
+		if (!callback) {
+			return this.password === this.encryptPassword(password);
+		}
 
-    if (!callback) {
+		this.encryptPassword(password, (err, pwdGen) => {
+			if (err) {
+				return callback(err);
+			}
 
-      return this.password === this.encryptPassword(password);
+			if (this.password === pwdGen) {
+				return callback(null, true);
+			}
 
-    }
+			return callback(null, false);
+		});
+	},
+	makeSalt(byteSize = 16, callback: Function) {
+		return crypto.randomBytes(byteSize, (err, salt) => {
+			if (err) {
+				return callback(err);
+			}
 
-    this.encryptPassword(password, (err, pwdGen) => {
+			return callback(null, salt.toString('base64'));
+		});
+	},
+	encryptPassword(password: string, callback: Function) {
+		if (!password || !this.salt) {
+			if (!callback) {
+				return null;
+			} else {
+				return callback('Missing password or salt');
+			}
+		}
 
-      if (err) {
+		const defaultIterations = 872791,
+			defaultKeyLength = 64,
+			salt = new Buffer(this.salt, 'base64'),
+			digest = 'sha512';
 
-        return callback(err);
+		if (!callback) {
+			return crypto.pbkdf2Sync(password, salt, defaultIterations, defaultKeyLength, digest).toString('base64');
+		}
 
-      }
+		return crypto.pbkdf2(password, salt, defaultIterations, defaultKeyLength, digest, (err, key) => {
+			if (err) {
+				return callback(err);
+			}
 
-      if (this.password === pwdGen) {
-        return callback(null, true);
-      }
-
-      return callback(null, false);
-
-    });
-
-  },
-  makeSalt(byteSize = 16, callback: Function) {
-
-    return crypto.randomBytes(byteSize, (err, salt) => {
-
-      if (err) {
-
-        return callback(err);
-
-      }
-
-      return callback(null, salt.toString('base64'));
-
-    });
-
-  },
-  encryptPassword(password: string, callback: Function) {
-
-    if (!password || !this.salt) {
-
-      if (!callback) {
-
-        return null;
-
-      } else {
-
-        return callback('Missing password or salt');
-
-      }
-
-    }
-
-    const defaultIterations = 872791,
-      defaultKeyLength = 64,
-      salt = new Buffer(this.salt, 'base64'),
-      digest = 'sha512';
-
-    if (!callback) {
-
-      return crypto.pbkdf2Sync(password, salt, defaultIterations, defaultKeyLength, digest)
-        .toString('base64');
-
-    }
-
-    return crypto.pbkdf2(password, salt, defaultIterations, defaultKeyLength, digest, (err, key) => {
-
-      if (err) {
-
-        return callback(err);
-
-      }
-
-      return callback(null, key.toString('base64'));
-
-    });
-
-  }
+			return callback(null, key.toString('base64'));
+		});
+	}
 };
 
 export const UserModel = model('User', userSchema, 'User');

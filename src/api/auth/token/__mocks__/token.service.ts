@@ -26,7 +26,7 @@ export class TokenService {
 	// }
 
 	public removeToken(filter: any): Promise<any> {
-        TokenService.RemoveTokenSpy(filter);
+		TokenService.RemoveTokenSpy(filter);
 		return Promise.resolve();
 	}
 
