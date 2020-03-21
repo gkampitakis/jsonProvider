@@ -1,13 +1,11 @@
-# Json Provider Backend
+# ~~Json Provider Backend~~ [Abandoned]
 
 ## Usage
 
 ## Dependencies
 
-## Future Work
+## ~~Future Work~~
 
-[Trello Board](https://trello.com/b/PkabRw7V/json-provider)
-
-## Author and Maintainer
+## Author
 
 [Georgios Kampitakis](https://gkampitakis.github.io/)
