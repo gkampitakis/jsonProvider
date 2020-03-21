@@ -51,8 +51,10 @@ export class TokenService {
 	public async retrieveToken(payload: any) {
 		TokenService.RetrieveTokenSpy(payload);
 
+		if (!TokenService.Token) return null;
+
 		return {
-			token: payload.token,
+			token: TokenService.Token,
 			type: payload.type,
 			userId: TokenService.UserId
 		};
